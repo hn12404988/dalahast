@@ -1,0 +1,152 @@
+<!doctype html>
+<head>
+	<meta charset="utf-8" >
+	<style>
+     #graph-container {
+		 top: 10%;
+		 left: 0;
+		 position: absolute;
+		 width: 100%;
+		 height: 90%;
+		 background-color: #FFFAF0;
+     }
+	 #side{
+		 top: 10%;
+		 left: 80%;
+		 position: absolute;
+		 width: 20%;
+		 height: 90%;
+		 background-color: #FFFFFF;
+	 }
+	 #ref{
+		 top: 0;
+		 left: 0;
+		 position: absolute;
+		 width: 100%;
+		 height: 35%;
+		 background-color: #DCDCDC;
+	 }
+	 #info{
+		 top: 30%;
+		 left: 0;
+		 position: absolute;
+		 width: 100%;
+		 height: 65%;
+		 background-color: #FFFFFF;
+	 }
+	 #filter{
+		 top: 0;
+		 left: 0;
+		 position: absolute;
+		 width: 100%;
+		 height: 10%;
+		 background-color: #CCC;
+	 }
+ 	</style>
+	<style src="/page/topology.css"></style>
+	<script src="/page/topology_js/main.js"></script>
+	<script src="/page/js_worker/ws.js"></script>
+	<script src="/page/js_worker/to_server.js"></script>
+	<script>
+	 var ws = new ws(["0","0","ws://192.168.1.105/ws"]);
+	 var to_server = new to_server();
+	</script>
+	<!-- START SIGMA IMPORTS -->
+	<script src="/page/sigma/src/sigma.core.js"></script>
+	<script src="/page/sigma/src/conrad.js"></script>
+	<script src="/page/sigma/src/utils/sigma.utils.js"></script>
+	<script src="/page/sigma/src/utils/sigma.polyfills.js"></script>
+	<script src="/page/sigma/src/sigma.settings.js"></script>
+	<script src="/page/sigma/src/classes/sigma.classes.dispatcher.js"></script>
+	<script src="/page/sigma/src/classes/sigma.classes.configurable.js"></script>
+	<script src="/page/sigma/src/classes/sigma.classes.graph.js"></script>
+	<script src="/page/sigma/src/classes/sigma.classes.camera.js"></script>
+	<script src="/page/sigma/src/classes/sigma.classes.quad.js"></script>
+	<script src="/page/sigma/src/classes/sigma.classes.edgequad.js"></script>
+	<script src="/page/sigma/src/captors/sigma.captors.mouse.js"></script>
+	<script src="/page/sigma/src/captors/sigma.captors.touch.js"></script>
+	<script src="/page/sigma/src/renderers/sigma.renderers.canvas.js"></script>
+	<script src="/page/sigma/src/renderers/sigma.renderers.webgl.js"></script>
+	<script src="/page/sigma/src/renderers/sigma.renderers.svg.js"></script>
+	<script src="/page/sigma/src/renderers/sigma.renderers.def.js"></script>
+	<script src="/page/sigma/src/renderers/webgl/sigma.webgl.nodes.def.js"></script>
+	<script src="/page/sigma/src/renderers/webgl/sigma.webgl.nodes.fast.js"></script>
+	<script src="/page/sigma/src/renderers/webgl/sigma.webgl.edges.def.js"></script>
+	<script src="/page/sigma/src/renderers/webgl/sigma.webgl.edges.fast.js"></script>
+	<script src="/page/sigma/src/renderers/webgl/sigma.webgl.edges.arrow.js"></script>
+	<script src="/page/sigma/src/renderers/canvas/sigma.canvas.labels.def.js"></script>
+	<script src="/page/sigma/src/renderers/canvas/sigma.canvas.hovers.def.js"></script>
+	<script src="/page/sigma/src/renderers/canvas/sigma.canvas.nodes.def.js"></script>
+	<script src="/page/sigma/src/renderers/canvas/sigma.canvas.edges.def.js"></script>
+	<script src="/page/sigma/src/renderers/canvas/sigma.canvas.edges.curve.js"></script>
+	<script src="/page/sigma/src/renderers/canvas/sigma.canvas.edges.arrow.js"></script>
+	<script src="/page/sigma/src/renderers/canvas/sigma.canvas.edges.curvedArrow.js"></script>
+	<script src="/page/sigma/src/renderers/canvas/sigma.canvas.edgehovers.def.js"></script>
+	<script src="/page/sigma/src/renderers/canvas/sigma.canvas.edgehovers.curve.js"></script>
+	<script src="/page/sigma/src/renderers/canvas/sigma.canvas.edgehovers.arrow.js"></script>
+	<script src="/page/sigma/src/renderers/canvas/sigma.canvas.edgehovers.curvedArrow.js"></script>
+	<script src="/page/sigma/src/renderers/canvas/sigma.canvas.extremities.def.js"></script>
+	<script src="/page/sigma/src/renderers/svg/sigma.svg.utils.js"></script>
+	<script src="/page/sigma/src/renderers/svg/sigma.svg.nodes.def.js"></script>
+	<script src="/page/sigma/src/renderers/svg/sigma.svg.edges.def.js"></script>
+	<script src="/page/sigma/src/renderers/svg/sigma.svg.edges.curve.js"></script>
+	<script src="/page/sigma/src/renderers/svg/sigma.svg.labels.def.js"></script>
+	<script src="/page/sigma/src/renderers/svg/sigma.svg.hovers.def.js"></script>
+	<script src="/page/sigma/src/middlewares/sigma.middlewares.rescale.js"></script>
+	<script src="/page/sigma/src/middlewares/sigma.middlewares.copy.js"></script>
+	<script src="/page/sigma/src/misc/sigma.misc.animation.js"></script>
+	<script src="/page/sigma/src/misc/sigma.misc.bindEvents.js"></script>
+	<script src="/page/sigma/src/misc/sigma.misc.bindDOMEvents.js"></script>
+	<script src="/page/sigma/src/misc/sigma.misc.drawHovers.js"></script>
+	<!-- SIGMA PLUGINS IMPORTS -->
+	<script src="/page/sigma/plugins/sigma.plugins.neighborhoods/sigma.plugins.neighborhoods.js"></script>
+	<script src="/page/sigma/plugins/sigma.plugins.dragNodes/sigma.plugins.dragNodes.js"></script>
+	<!-- Node Border -->
+	<script>
+	 sigma.canvas.nodes.border = function(node, context, settings) {
+		 var prefix = settings('prefix') || '';
+
+		 context.fillStyle = node.color || settings('defaultNodeColor');
+		 context.beginPath();
+		 context.arc(
+			 node[prefix + 'x'],
+			 node[prefix + 'y'],
+			 node[prefix + 'size'],
+			 0,
+			 Math.PI * 2,
+			 true
+		 );
+
+		 context.closePath();
+		 context.fill();
+
+		 // Adding a border
+		 context.lineWidth = node.borderWidth || 1;
+		 context.strokeStyle = node.borderColor || '#fff';
+		 context.stroke();
+	 };
+	</script>
+</head>
+<body onload="init()">
+	<div id="filter">
+		<input type="text" onkeyup="search_node(this.value)">
+		<input type="button" value="Reset Graph" onclick="reset_graph()">
+		<input type="button" value="Side Info" onclick="side_info()">
+		<input type="checkbox" id="filter_dragable" onchange="dragable(this);s.refresh()">Dragable
+		<input type="checkbox" id="filter_lock" onchange="lock_node(this)">Lock
+	</div>
+	<div id="graph-container"></div>
+	<div id="side" hidden=true>
+		<div id="ref">
+		</div>
+		<div id="info">
+			<span>Node: </span><span id="node"></span><br>
+			<span>Node Type: </span><span id="node_type"></span><br>
+			<span>Interface: </span><span id="interface"></span><br>
+			<span>Input: </span><span id="input"></span><br>
+			<span>Input Form: </span><span id="input_form"></span><br>
+			<span>Ani Data Racing: </span><span id="anti_data_racing"></span>
+		</div>
+	</div>
+</body>
+
