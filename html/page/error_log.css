@@ -1,0 +1,41 @@
+#up{
+	background-color: white;
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	height: 10%;
+	width: 100%;
+}
+
+#down{
+	background-color: white;
+	position: absolute;
+	top: 10%;
+	left: 0px;
+	height: 90%;
+	width: 100%;
+}
+
+.up_block{
+	display: inline-block;
+	font-weight: bold;
+	color: black;
+	border-color: black;
+	border-width: 3px;
+}
+
+table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+td, th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+}
+
+tr:nth-child(even) {
+    background-color: #dddddd;
+}

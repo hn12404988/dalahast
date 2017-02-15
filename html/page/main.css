@@ -1,0 +1,256 @@
+/*
+z-index: grey > (sign_group & login_group) > others
+*/ 
+
+/*
+//////////////////////////  Search Bar  //////////////////////////
+*/
+
+.up_icon{
+	height: 70%;
+}
+
+/*
+//////////////////////////  Post Bar //////////////////////////
+*/
+
+
+.page_tag{
+	display: inline-block;
+}
+
+.normal_tag{
+	display: inline-block;
+}
+/*
+//////////////////////////  Post Page  //////////////////////////
+*/
+.post_container{
+	background-color: yellow;
+	margin:0px;
+	border: 0px;
+	padding: 0px;
+	height: 100%;
+	width: 100%;
+	transition: height;
+	transition-duration: .9s;
+	transition-timing-function: ease;
+	transition-delay: .1s;
+}
+
+/*
+//////////////////////////  Show Meme Page  //////////////////////////
+*/
+
+/*
+//////////////////////////  Show Picture Page  //////////////////////////
+*/
+
+/*
+//////////////////////////  Show Digging Page  //////////////////////////
+*/
+
+/*
+//////////////////////////  Side Menu  //////////////////////////
+*/
+.side_block{
+	height:17%;
+	width:80%;
+	position:relative;
+	left:9%;
+	background-color:pink;
+	border-style:solid;
+	font-weight: bold;
+}
+
+/*
+//////////////////////////  Screen  //////////////////////////
+*/
+#screen_1{
+   background-color: pink;
+   position: fixed;
+   top: 5%;
+   left: 0px;
+   height: 95%;
+   width: 100%;
+   overflow: auto;
+   transition: left, width;
+   transition-duration: .9s;
+   transition-timing-function: ease;
+   transition-delay: .1s;
+}
+
+#screen_2{
+   background-color: pink;
+   position: fixed;
+   top: 5%;
+   left: 20%;
+   height: 95%;
+   width: 80%;
+   overflow: auto;
+   transition: left, width;
+   transition-duration: .9s;
+   transition-timing-function: ease;
+   transition-delay: .1s;
+}
+/*
+////////////////////////// Home Page   //////////////////////////
+*/
+
+/*
+////////////////////////// Item Page   //////////////////////////
+*/
+
+/*
+//////////////////////////  Item Middle Bar  //////////////////////////
+*/
+
+/*
+//////////////////////////  Comment  //////////////////////////
+*/
+
+.comment_like{
+   width: 20px;
+   height: 20px;
+}
+
+.comment_block{
+   background-color:pink;
+   position: relative;
+   width: 90%;
+   border: solid;
+}
+
+.reply_block{
+   background-color:yellow;
+   position: relative;
+   left:20%;
+   width: 80%;
+}
+
+.comment_delete{
+   position: absolute;
+   top: 0%;
+   left:95%;
+   width: 20px;
+   height: 20px;
+}
+
+.comment_reply_button{
+   position: absolute;
+   top: 0%;
+   left:80%;
+   width: 80px;
+   height: 30px;
+}
+
+.reply_text{
+   width:80%;
+   height: 30%;
+   resize: none;
+}
+
+.reply_send{
+   width: 40px;
+   height: 40px;
+}
+/*
+//////////////////////////  Recommend  //////////////////////////
+*/
+
+/*
+//////////////////////////  Grey layin  //////////////////////////
+*/
+#grey_in{
+   background-color: grey;
+   z-index: 1;
+   width: 100%;
+   height: 100%;
+   position: fixed;
+   left: 0px;
+   top: 0px;
+   transition-property: opacity;
+   opacity: 0.4;
+   transition-duration: .9s;
+   transition-timing-function: ease;
+   transition-delay: .1s;
+}
+
+*{
+	padding: 0px;
+	border: 0px;
+	margin: 0px;
+}
+
+/*
+//////////////////////////  Ask Language  //////////////////////////
+*/
+
+.asklang_outside_block{
+	background-color:yellow;height:15%;width:15%;margin:10px;
+}
+
+.asklang_outside_block .check{
+	background-color:pink;height:100%;width:30%;position:relative;left:70%;
+}
+
+.asklang_outside_block .inner_block{
+	background-color:grey;height:100%;width:30%;position:relative;left:70%;
+}
+
+.asklang_outside_block .inner_block .updown{
+	width:100%;height:30%;position:relative;
+}
+
+/*
+//////////////////////////  Group Transform  //////////////////////////
+*/
+.small_group{
+   background-color:red;
+   z-index:2;
+   height:30%;
+   width:30%;
+   position:absolute;
+   left:35%;
+   top:-30%;
+   transition:top;
+   transition-duration:.9s;
+   transition-timing-function:ease;
+   transition-delay:.1s;
+}
+
+.medium_group{
+   background-color:red;
+   z-index:2;
+   height:60%;
+   width:60%;
+   position:absolute;
+   left:20%;
+   top:-60%;
+   transition:top;
+   transition-duration:.9s;
+   transition-timing-function:ease;
+   transition-delay:.1s;
+}
+
+.large_group{
+   background-color:red;
+   z-index:2;
+   height:90%;
+   width:90%;
+   position:absolute;
+   left:5%;
+   top:-90%;
+   transition:top;
+   transition-duration:.9s;
+   transition-timing-function:ease;
+   transition-delay:.1s;
+}
+
+/*
+//////////////////////////  Add Meme  //////////////////////////
+*/
+@font-face{font-family:impact;src:url('/fonts/impact.ttf');}
+
+
+
