@@ -4,12 +4,13 @@
 void get(std::string &str){
 	str.clear();
 	char input[100];
-	cin.getline(input,100);
+	std::cin.getline(input,100);
 	str = input;
 }
 
 int main(){
 	dalahast da;
+	client_core client;
 	std::string str,local_ip,server_index;
 	int i;
 	short int to_center {0};
@@ -18,7 +19,7 @@ int main(){
 	/**
 	 * Init
 	 **/
-	cout << "Is this server the center server?(y/n)" << endl;
+	std::cout << "Is this server the center server?(y/n)" << std::endl;
 	get(server_index);
 	if(server_index=="y" || server_index=="Y"){
 		server_index = "0";
@@ -28,10 +29,10 @@ int main(){
 		/**
 		 * 
 		 **/
-		cout << "What is the TCP/IP address of 'control_sql.cpp ' in the center server?(ex: 192.168.1.11:8888)" << endl;
+		std::cout << "What is the TCP/IP address of 'control_sql.cpp ' in the center server?(ex: 192.168.1.11:8888)" << std::endl;
 		get(str);
 		if(str==""){
-			cout << "Abort" << endl;
+			std::cout << "Abort" << std::endl;
 			return 0;
 		}
 		/**
@@ -41,33 +42,31 @@ int main(){
 		client.import_location(&location);
 		str = "test";
 		if(client.fire(to_center,str)>0){
-			cout << "Can't connect to 'control_sql.cpp' in center server" << endl;
+			std::cout << "Can't connect to 'control_sql.cpp' in center server" << std::endl;
 			return 0;
 		}
 		/**
 		 * 
 		 **/
-		cout << "What is the index of this server?(integer)" << endl;
+		std::cout << "What is the index of this server?(integer)" << std::endl;
 		get(server_index);
 		if(server_index==""){
-			cout << "Abort" << endl;
+			std::cout << "Abort" << std::endl;
 			return 0;
 		}
 		i = std::stoi(server_index);
 		server_index = std::to_string(i);
-		//to control_sql
 	}
 	else{
-		cout << "Abort" << endl;
+		std::cout << "Abort" << std::endl;
 		return 0;
 	}
-	cout << "What is the ip of this server for TCP/IP socket?(ex: 192.168.1.11)" << endl;
+	std::cout << "What is the ip of this server for TCP/IP socket?(ex: 192.168.1.11)" << std::endl;
 	get(local_ip);
 	if(local_ip==""){
-		cout << "Abort" << endl;
+		std::cout << "Abort" << std::endl;
 		return 0;
 	}
-	//to control_sql
 	/**
 	 * Build tables in self.db
 	 **/
@@ -80,7 +79,7 @@ int main(){
 		std::cout << "Fail on building table 'self'" << std::endl;
 		return 0;
 	}
-	str = "delete * from self";
+	str = "delete from self";
 	if(da.db_exec(str)==false){
 		std::cout << "Fail on deleting 'self' table" << std::endl;
 		return 0;
@@ -106,6 +105,28 @@ int main(){
 		return 0;
 	}
 	if(center==false){
+		str = "{\"db\":\"info.db\",\"query\":\"delete from server_info where ip = '"+local_ip+"'\",\"res\":\"0\"}";
+		if(client.fire(to_center,str)>0){
+			std::cout << "Client fail on clearing server_info data" << std::endl;
+			return 0;
+		}
+		else{
+			if(str!="1"){
+				std::cout << "Request fail on clearing server_info data" << std::endl;
+				return 0;
+			}
+		}
+		str = "{\"db\":\"info.db\",\"query\":\"insert into server_info (id,ip,root) values ("+server_index+",'"+local_ip+"','"+da.root+"')\",\"res\":\"0\"}";
+		if(client.fire(to_center,str)>0){
+			std::cout << "Client fail on inserting server_info data" << std::endl;
+			return 0;
+		}
+		else{
+			if(str!="1"){
+				std::cout << "Request fail on inserting server_info data" << std::endl;
+				return 0;
+			}
+		}
 		str = "insert into self (key,value) values ('control_sql','"+location[0]+"')";
 		if(da.db_exec(str)==false){
 			std::cout << "SQL fail on self table" << std::endl;
@@ -123,22 +144,22 @@ int main(){
 	/**
 	 * Build tables in topology.db
 	 **/
-	str = "create table if not exists topology (from_server INT, from_node CHAR(100), to_server INT, to_node CHAR(100), type CHAR(50))";
+	str = "create table if not exists topology (from_server CHAR(50), from_node CHAR(100), to_server CHAR(50), to_node CHAR(100), type CHAR(50))";
 	if(da.db_exec(str)==false){
 		std::cout << "Fail on building table 'topology'" << std::endl;
 		return 0;
 	}
 	/**
 	 * Build tables in error_log.db
-	 * init, request, socket
+	 * dalahast, request, socket
 	 **/
 	if(da.db_open("sqlite/error_log.db")==false){
 		std::cout << "Fail on opening database 'error_log'" << std::endl;
 		return 0;
 	}
-	str = "create table if not exists init (server INT, node CHAR(100), message TEXT, time DATETIME)";
+	str = "create table if not exists dalahast (server INT, node CHAR(100), message TEXT, time DATETIME)";
 	if(da.db_exec(str)==false){
-		std::cout << "Fail on building table 'init'" << std::endl;
+		std::cout << "Fail on building table 'dalahast'" << std::endl;
 		return 0;
 	}
 	str = "create table if not exists request (from_server INT, from_node CHAR(100), to_server INT, to_node CHAR(100), message TEXT, reply TEXT, time DATETIME)";
@@ -152,57 +173,32 @@ int main(){
 		return 0;
 	}
 	/**
-	 * Build tables in server_info.db
-	 * configuration, server_info, node_info
+	 * Build tables in info.db
+	 * server_info, node_info
 	 **/
 	if(da.db_open("sqlite/info.db")==false){
 		std::cout << "Fail on opening database 'info'" << std::endl;
 		return 0;
 	}
-	str = "create table if not exists configuration (category CHAR(50),key CHAR(50),value CHAR(50))";
+	str = "create table if not exists server_info (id INT,ip CHAR(50),root CHAR(100))";
 	if(da.db_exec(str)==false){
 		std::cout << "Fail on building table 'configuration'" << std::endl;
 		return 0;
 	}
-	str = "create table if not exists server_info (id INT,ip CHAR(50))";
-	if(da.db_exec(str)==false){
-		std::cout << "Fail on building table 'configuration'" << std::endl;
-		return 0;
-	}
-	str = "create table if not exists node_info (server INT,name CHAR(100),'private' TINYINT default 0, 'anti' TINYINT default 0, 'freeze' TINYINT default 0, 'check' TINYINT default 0)";
+	str = "create table if not exists node_info (server INT,name CHAR(100),'interface' CHAR(10) default 'FILE', 'anti' TINYINT default 0, 'freeze' TINYINT default 0, 'check' TINYINT default 0)";
 	if(da.db_exec(str)==false){
 		std::cout << "Fail on building table 'node_info'" << std::endl;
 		return 0;
 	}
 	/**
-	 * 127.0.0.1 into sql
+	 * local_ip into sql
 	 **/
-	str = "delete from server_info where ip = '127.0.0.1'";
+	str = "delete from server_info where ip = '"+local_ip+"'";
 	if(da.db_exec(str)==false){
 		std::cout << "SQLite process fail" << std::endl;
 		return 0;
 	}
-	str = "insert into server_info (id,ip) values (0,'127.0.0.1')";
-	if(da.db_exec(str)==false){
-		std::cout << "SQLite process fail" << std::endl;
-		return 0;
-	}
-	/**
-	 * Getting root
-	 **/
-	if(da.root==""){
-		std::cout << "Fail on detecting root" << std::endl;
-		return 0;
-	}
-	/**
-	 * Insert root into sql
-	 **/
-	str = "delete from configuration where category = 'server' and key = 'root'";
-	if(da.db_exec(str)==false){
-		std::cout << "SQLite process fail" << std::endl;
-		return 0;
-	}
-	str = "insert into configuration (category,key,value) values ('server','root','"+da.root+"')";
+	str = "insert into server_info (id,ip,root) values (0,'"+local_ip+"','"+da.root+"')";
 	if(da.db_exec(str)==false){
 		std::cout << "SQLite process fail" << std::endl;
 		return 0;

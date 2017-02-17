@@ -9,9 +9,9 @@
 unix_server server;
 review::IS args {"up_tag"};
 review_type rtype;
-review::IS table {"maria","node_crash","client","request","scan_error","error_log","error_node_receive","staff_access","data_racing","execute_node","image_auth","image_upload"};
-review::IS up_tag {"maria","node_crash","client","request","scan_node","configure","error_node","staff_access","data_racing","execute","image_auth","image_upload"};
-review::IS database {"error_log","error_log","error_log","error_log","node","configuration","error_log","error_log","error_log","error_log","error_log","error_log"};
+review::IS table {"dalahast","request","socket"};
+review::IS up_tag {"dalahast","request","socket"};
+review::IS database {"error_log","error_log","error_log"};
 std::string up_string;
 short int max {0};
 

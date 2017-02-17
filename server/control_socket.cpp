@@ -28,10 +28,7 @@
 #include <websocketpp/config/asio_no_tls.hpp>
 #include <websocketpp/server.hpp>
 //#include <websocketpp/extensions/permessage_deflate/enabled.hpp>
-#include <review/client_core.h>
-#include <review/control_filter.h>
-#include <review/control_index.h>
-#include <review/configure.h>
+#include <hast/client_core.h>
 //#include <iostream>
 
 struct testee_config : public websocketpp::config::asio {
@@ -85,11 +82,7 @@ typedef websocketpp::lib::shared_ptr<websocketpp::lib::thread> thread_ptr;
 
 const size_t amount {10};
 
-control_filter filter;
-int max {0};
 std::vector<client_core*> client;
-std::vector<control_index*> get_index;
-std::vector<short int> socket_index;
 std::vector<char> callback_index;
 std::vector<std::string> message;
 std::map<std::thread::id,short int> client_index;
@@ -106,23 +99,15 @@ void on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
 		return;
 	}
 	message[i].pop_back();
-	get_index[i]->extract_index_JSON(message[i],socket_index[i]);
-	if(socket_index[i]>0 && socket_index[i]<max){//index must start from 1.
-		if(client[i]->fire(socket_index[i],message[i])>0){
-			message[i] = "0";
-			message[i].push_back(callback_index[i]);
-			s->send(hdl, message[i].c_str(), msg->get_opcode());
-		}
-		else{
-			if(message[i]==""){
-				message[i] = "0";
-			}
-			message[i].push_back(callback_index[i]);
-			s->send(hdl, message[i].c_str(), msg->get_opcode());
-		}
+	if(client[i]->fire(,message[i])>0){
+		message[i] = "0";
+		message[i].push_back(callback_index[i]);
+		s->send(hdl, message[i].c_str(), msg->get_opcode());
 	}
 	else{
-		message[i] = "0{\"Error\":\"Wrong socket index\"}";
+		if(message[i]==""){
+			message[i] = "0";
+		}
 		message[i].push_back(callback_index[i]);
 		s->send(hdl, message[i].c_str(), msg->get_opcode());
 	}
@@ -137,12 +122,10 @@ void build_index(std::vector<thread_ptr> *ts){
 	for (int i = 0; i < ts->size(); ++i) {
 		client_index[(*ts)[i]->get_id()] = i;
 		message.push_back("");
-		socket_index.push_back(-1);
 		callback_index.push_back('\0');
 		client.push_back(new client_core);
-		get_index.push_back(new control_index);
-		client[i]->import_location(&filter.location,10);
-		client[i]->set_error_node(0,__FILE__);
+		//client[i]->import_location(&filter.location,10);
+		//client[i]->set_error_node(0,__FILE__);
 	}
 }
 
@@ -152,7 +135,6 @@ int main(int argc, char * argv[]) {
 
     short int control_port = 8000;
 	short int i;
-	max = filter.location.size();
     try {
         // Total silence
         testee_server.clear_access_channels(websocketpp::log::alevel::all);
@@ -200,7 +182,6 @@ int main(int argc, char * argv[]) {
     }
 	for (i = 0; i < amount; i++) {
 		delete client[i];
-		delete get_index[i];
 	}
 	return 0;
 }
