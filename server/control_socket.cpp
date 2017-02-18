@@ -29,6 +29,7 @@
 #include <websocketpp/server.hpp>
 //#include <websocketpp/extensions/permessage_deflate/enabled.hpp>
 #include <hast/client_core.h>
+#include <dalahast/dalahast.h>
 //#include <iostream>
 
 struct testee_config : public websocketpp::config::asio {
@@ -80,36 +81,74 @@ using websocketpp::lib::bind;
 typedef server::message_ptr message_ptr;
 typedef websocketpp::lib::shared_ptr<websocketpp::lib::thread> thread_ptr;
 
+std::string port {"8000"};
+std::string server_index;
 const size_t amount {10};
-
-std::vector<client_core*> client;
-std::vector<char> callback_index;
-std::vector<std::string> message;
-std::map<std::thread::id,short int> client_index;
+da::IS location;
+short int location_amount;
+std::map<std::thread::id,client_core*> client_index;
+typedef std::map<std::thread::id,client_core*> client_type;
 
 // Define a callback to handle incoming messages
 void on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
-	short int i = client_index[std::this_thread::get_id()];
-	/****** aware of websocketpp delete old thread and create new one dynamically *****/
-	message[i] = msg->get_payload();
-	callback_index[i] = message[i].back();
-	if(callback_index[i]=='\0'){
-		message[i] = "0{\"Error\":\"No content\"}0";
-		s->send(hdl, message[i].c_str(), msg->get_opcode());
+	client_core *client {client_index[std::this_thread::get_id()]};
+	short int i,j;
+	char callback_index;
+	std::string message,node;
+	/**
+	 * 
+	 **/
+	message = msg->get_payload();
+	callback_index = message.back();
+	if(callback_index=='\0'){
+		message = "0{\"Error\":\"No content\"}0";
+		s->send(hdl, message.c_str(), msg->get_opcode());
 		return;
 	}
-	message[i].pop_back();
-	if(client[i]->fire(,message[i])>0){
-		message[i] = "0";
-		message[i].push_back(callback_index[i]);
-		s->send(hdl, message[i].c_str(), msg->get_opcode());
+	message.pop_back();
+	/**
+	 * 
+	 **/
+	j = message.length();
+	for(i=0;i<j;++i){
+		if(message[i]=='{'){
+			break;
+		}
+	}
+	if(i==j){
+		message = "0{\"Error\":\"Fail on getting node\"}0";
+		s->send(hdl, message.c_str(), msg->get_opcode());
+		return;
+	}
+	/**
+	 * 
+	 **/
+	node = message.substr(0,i);
+	message = message.substr(i);
+	for(i=1;i<location_amount;++i){
+		if(location[i].find(node)!=std::string::npos){
+			break;
+		}
+	}
+	if(i==location_amount){
+		message = "0{\"Error\":\"Node doesn't exist\"}0";
+		s->send(hdl, message.c_str(), msg->get_opcode());
+		return;
+	}
+	/**
+	 * 
+	 **/
+	if(client->fire(i,message)>0){
+		message = "0{\"Error\":\"Fail on firing\"}";
+		message.push_back(callback_index);
+		s->send(hdl, message.c_str(), msg->get_opcode());
 	}
 	else{
-		if(message[i]==""){
-			message[i] = "0";
+		if(message==""){
+			message = "0{\"Error\":\"Empty reply\"}";
 		}
-		message[i].push_back(callback_index[i]);
-		s->send(hdl, message[i].c_str(), msg->get_opcode());
+		message.push_back(callback_index);
+		s->send(hdl, message.c_str(), msg->get_opcode());
 	}
 }
 
@@ -120,20 +159,52 @@ void on_socket_init(websocketpp::connection_hdl, boost::asio::ip::tcp::socket & 
 
 void build_index(std::vector<thread_ptr> *ts){
 	for (int i = 0; i < ts->size(); ++i) {
-		client_index[(*ts)[i]->get_id()] = i;
-		message.push_back("");
-		callback_index.push_back('\0');
-		client.push_back(new client_core);
-		//client[i]->import_location(&filter.location,10);
-		//client[i]->set_error_node(0,__FILE__);
+		client_index[(*ts)[i]->get_id()] = new client_core;
+		client_index[(*ts)[i]->get_id()]->import_location(&location);
+		client_index[(*ts)[i]->get_id()]->set_error_node(0,__FILE__,server_index);
 	}
 }
 
+bool init(){
+	dalahast da(__FILE__);
+	server_index = da.server_index;
+	std::string str;
+	int j;
+	if(da.db_open(da.root+"/sqlite/info.db")==false){
+		return false;
+	}
+	str = "select name from node_info where server = "+da.server_index+" and interface = 'FILE' and 'private' = 0";
+	if(da.db_is_exec(str)==false){
+		return false;
+	}
+	location.push_back(da.get_center_ip()+":8889");
+	j = da.is.size()-1;
+	for(;j>=0;--j){
+		location.push_back(da.root+da::server_prefix+da.is[j]+".socket");
+	}
+	location_amount = location.size();
+	return true;
+}
+
+void log(){
+	dalahast da(__FILE__);
+	da.port_log(port);
+}
+
 int main(int argc, char * argv[]) {
+	if(argc>1){
+		log();
+		return 0;
+	}
+	if(init()==false){
+		dalahast da(__FILE__);
+		da.error_log("init() return false");
+		return 0;
+	}
     // Create a server endpoint
     server testee_server;
 
-    short int control_port = 8000;
+    short int control_port = std::stoi(port);
 	short int i;
     try {
         // Total silence
@@ -156,17 +227,6 @@ int main(int argc, char * argv[]) {
         testee_server.start_accept();
 
         // Start the ASIO io_service run loop
-		/*
-		  if (amount == 1) {
-		  sc_index[std::this_thread::get_id()] = 0;
-		  message.push_back("");
-		  ip.push_back("");
-		  port.push_back("");
-		  j.push_back(0);
-		  go.push_back(false);
-		  testee_server.run();
-		  } else {
-		*/
 		std::vector<thread_ptr> ts;
 		for (i = 0; i < amount; i++) {
 			ts.push_back(websocketpp::lib::make_shared<websocketpp::lib::thread>(&server::run, &testee_server));
@@ -175,13 +235,15 @@ int main(int argc, char * argv[]) {
 		for (i = 0; i < amount; i++) {
 			ts[i]->join();
 		}
-		//}
-
     } catch (websocketpp::exception const & e) {
         std::cout << "exception: " << e.what() << std::endl;
     }
-	for (i = 0; i < amount; i++) {
-		delete client[i];
+	client_type::iterator it;
+	client_type::iterator it_end;
+	it = client_index.begin();
+	it_end = client_index.end();
+	for(;it!=it_end;++it){
+		delete it->second;
 	}
 	return 0;
 }

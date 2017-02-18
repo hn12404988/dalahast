@@ -10,6 +10,7 @@ da::IS args {"db","query","res"};
 auto execute = [&](const short int index){
 	dalahast da(__FILE__);
 	iss_tool _iss;
+	is_tool *_is {&_iss};
 	ss_tool *_ss {&_iss};
 	_ss->import_fixed(&args);
 	da::SS param;
@@ -26,13 +27,21 @@ auto execute = [&](const short int index){
 			server.echo_back_msg(server.socketfd[index],"0{\"Error\":\"Fail on opening database\"}");
 			continue;
 		}
-		if(param["res"]=="1"){
-			if(da.db_res_exec(param["query"])==false){
+		if(param["res"]=="iss"){
+			if(da.db_iss_exec(param["query"])==false){
 				server.echo_back_msg(server.socketfd[index],"0{\"Error\":\"Fail on executing res query\"}");
 				continue;
 			}
 			_iss.to_array(da.iss);
 			server.echo_back_msg(server.socketfd[index],_iss.outcome);
+		}
+		else if(param["res"]=="is"){
+			if(da.db_is_exec(param["query"])==false){
+				server.echo_back_msg(server.socketfd[index],"0{\"Error\":\"Fail on executing res query\"}");
+				continue;
+			}
+			_is->to_array(da.is);
+			server.echo_back_msg(server.socketfd[index],_is->outcome);
 		}
 		else{
 			if(da.db_exec(param["query"])==false){
@@ -47,7 +56,7 @@ auto execute = [&](const short int index){
 
 void log(){
 	dalahast da(__FILE__);
-	da.public_node(port);
+	da.port_log(port);
 }
 
 int main(int argc, char* argv[]){

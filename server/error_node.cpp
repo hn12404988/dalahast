@@ -1,14 +1,13 @@
-#include <review/maria_wrapper.h>
-#include <review/unix_server.h>
-#include <review/configure.h>
-#include <review/ss_tool.h>
+#include <hast/tcp_server.h>
+#include <dalahast/dalahast.h>
 
 /**
  * args [Raw Input]: A string in json form. 
- * args [message2]: It can be `flag` when type = `client` or it can be `reply` when type = `request`.
+ * args [message2]: It can be `flag` when type = `socket` or it can be `reply` when type = `request`.
  **/
-unix_server server;
-review::IS args {"type","from_node","to_node","message","message2"};
+tcp_server server;
+std::string port {"8889"};
+review::IS args {"type","from_server","from_node","to_node","message","message2"};
 std::string this_server;
 short int root_len;
 short int error {-1};

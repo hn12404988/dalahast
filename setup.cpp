@@ -151,7 +151,7 @@ int main(){
 	}
 	/**
 	 * Build tables in error_log.db
-	 * dalahast, request, socket
+	 * dalahast, request, socket, error
 	 **/
 	if(da.db_open("sqlite/error_log.db")==false){
 		std::cout << "Fail on opening database 'error_log'" << std::endl;
@@ -172,6 +172,16 @@ int main(){
 		std::cout << "Fail on building table 'socket'" << std::endl;
 		return 0;
 	}
+	str = "create table if not exists error (server INT, node CHAR(100), message TEXT, time DATETIME)";
+	if(da.db_exec(str)==false){
+		std::cout << "Fail on building table 'error'" << std::endl;
+		return 0;
+	}
+	str = "create table if not exists error_node_recv (message TEXT, time DATETIME)";
+	if(da.db_exec(str)==false){
+		std::cout << "Fail on building table 'error'" << std::endl;
+		return 0;
+	}
 	/**
 	 * Build tables in info.db
 	 * server_info, node_info
@@ -185,7 +195,7 @@ int main(){
 		std::cout << "Fail on building table 'configuration'" << std::endl;
 		return 0;
 	}
-	str = "create table if not exists node_info (server INT,name CHAR(100),'interface' CHAR(10) default 'FILE', 'anti' TINYINT default 0, 'freeze' TINYINT default 0, 'check' TINYINT default 0)";
+	str = "create table if not exists node_info (server INT,name CHAR(100),'interface' CHAR(10) default 'FILE', 'private' TINYINT default 0, 'anti' TINYINT default 0, 'freeze' TINYINT default 0, 'check' TINYINT default 0)";
 	if(da.db_exec(str)==false){
 		std::cout << "Fail on building table 'node_info'" << std::endl;
 		return 0;
