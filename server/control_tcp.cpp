@@ -1,86 +1,122 @@
-#include <review/tcp_server.h>
-#include <review/client_core.h>
-#include <review/control_filter.h>
-#include <review/control_index.h>
-#include <review/configure.h>
-#include <string.h>
+#include <hast/tcp_server.h>
+#include <hast/client_core.h>
+#include <dalahast/dalahast.h>
 
 tcp_server server;
-std::string port {"8887"};
-short int max {0};
-review::IS location;
-short int execute_node {0};
+std::string port;
+short int location_amount;
+da::IS location;
+std::string root_prefix;
 
 auto execute = [&](const short int index){
 	client_core client;
-	control_index get_index;
 	client.import_location(&location,5);
 	client.set_error_node(0,__FILE__);
-	short int i {0};
-	short int flag;
-	char first_char;
-	bool to_execute;
-	while(server.msg_to_args(index)==true){
+	int j;
+	short int i;
+	std::string node,message;
+	while(server.msg_recv(index)==true){
+		message = server.raw_msg[index];
 		/**
 		 * 
 		 **/
-		to_execute = false;
-		if(first_char=='{'){
-			get_index.extract_index_JSON(server.raw_msg[index],i);
-		}
-		else if(first_char=='['){
-			first_char = server.raw_msg[index].back();
-			if(first_char>=48 && first_char<=57){
-				get_index.extract_index_ARRAY(server.raw_msg[index],i);
-			}
-			else{
-				i = 0;
-				to_execute = true;
+		j = message.length();
+		for(i=0;i<j;++i){
+			if(message[i]=='{'){
+				break;
 			}
 		}
-		else{
-			get_index.extract_index_GET(server.raw_msg[index],i);
-		}
-		if(i>0 && i<=max){
-			flag = client.fire(i,server.raw_msg[index]);
-		}
-		else if(i==0 && to_execute==true){
-			flag = client.fire(execute_node,server.raw_msg[index]);
-		}
-		else{
-			server.echo_back_error(server.socketfd[index],"index is wrong: "+std::to_string(i));
+		if(i==j){
+			message = "Fail on getting node";
+			server.echo_back_error(server.socketfd[index],message);
 			continue;
 		}
-		if(flag>0){
-			server.raw_msg[index] = "Fail on fire which flag is: "+std::to_string(flag);
-			server.echo_back_error(server.socketfd[index],server.raw_msg[index]);
+		/**
+		 * 
+		 **/
+		node = message.substr(0,i);
+		node = root_prefix+node+".socket";
+		message = message.substr(i);
+		for(i=1;i<location_amount;++i){
+			if(location[i]==node){
+				break;
+			}
+		}
+		if(i==location_amount){
+			message = "Node doesn't exist";
+			server.echo_back_error(server.socketfd[index],message);
+			continue;
+		}
+		/**
+		 * 
+		 **/
+		if(client.fire(i,message)>0){
+			message = "Fail on firing";
+			server.echo_back_error(server.socketfd[index],message);
 		}
 		else{
-			if(server.raw_msg[index]==""){
-				server.raw_msg[index] = "0";
+			if(message==""){
+				message = "Empty reply";
+				server.echo_back_error(server.socketfd[index],message);
 			}
-			server.echo_back_msg(server.socketfd[index],server.raw_msg[index]);
+			else{
+				server.echo_back_msg(server.socketfd[index],message);
+			}
 		}
 	}
 	server.done(index);
 };
 
-void init(){
-	configure conf(__FILE__);
-	port = conf.get_configuration("server","control_tcp_port");
-	control_filter filter;
-	location = filter.location;
-	location.push_back(conf.get_server_root()+conf.get_configuration("server","execute_node")+".socket");
-	max = location.size()-2;
-	execute_node = max+1;
+void log(){
+	dalahast da(__FILE__);
+	da.port_log("main_port");
+}
+
+bool init(){
+	dalahast da(__FILE__);
+	std::string str;
+	int j;
+	j = da.my_server_id();
+	if(j==-1){
+		return false;
+	}
+	port = da.get_port(da.my_server_id(),"main_port");
+	if(port==""){
+		return false;
+	}
+	root_prefix = da.root+da::server_prefix;
+	if(da.db_open(da.root+"/sqlite/info.db")==false){
+		return false;
+	}
+	str = "select node from node where interface = 'FILE' and 'private' = 0";
+	if(da.db_is_exec(str)==false){
+		return false;
+	}
+	location.push_back(da.root+da::server_prefix+"private/error_node.socket");
+	j = da.is.size()-1;
+	for(;j>=0;--j){
+		location.push_back(da.root+da::server_prefix+da.is[j]+".socket");
+	}
+	location_amount = location.size();
+	return true;
 }
 
 int main(int argc, char* argv[]){
+	if(argc>1){
+		log();
+		return 0;
+	}
 	server.execute = execute;
-	server.set_args(nullptr);
-	init();
-	if(server.init(port)==true){
-		server.start_accept();
+	if(init()==true){
+		if(server.init(port)==true){
+			server.start_accept();
+		}
+		dalahast da(__FILE__);
+		da.error_log("Node crash");
+	}
+	else{
+		dalahast da(__FILE__);
+		da.error_log("init() return false");
 	}
 	return 0;
 }

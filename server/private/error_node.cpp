@@ -1,38 +1,12 @@
-#include <hast/tcp_server.h>
+#include <hast/unix_server.h>
 #include <dalahast/dalahast.h>
 
 /**
  * args [Raw Input]: A string in json form. 
  * args [message2]: It can be `flag` when type = `socket` or it can be `reply` when type = `request`.
  **/
-tcp_server server;
-std::string port {"8889"};
-review::IS args {"type","from_server","from_node","to_node","message","message2"};
-std::string this_server;
-short int root_len;
-short int error {-1};
-short int request {-1};
-short int client {-1};
-short int tcp_server {-1};
-short int tcp_node {-1};
-
-bool sql_pre(maria_wrapper *sql,bool init = false){
-	review::IS query {"insert into error_log.error_node_receive (server,message,reason,time) values (?,?,?,NOW())","insert into error_log.request (from_server,from_node,to_server,to_node,message,reply,time) values (?,?,?,?,?,?,NOW())","insert into error_log.client (from_server,from_node,to_server,to_node,message,flag,time) values (?,?,?,?,?,?,NOW())","select server from server.server where local_ip = ? OR outgoing_ip = ? limit 1","select node from node.info where server = ? and interface = ? limit 1"};
-	short int i;
-	for(i=0;i<query.size();++i){
-		if(sql->prepare(query[i])==-1){
-			return false;
-		}
-	}
-	if(init==true){
-		error = 0;
-		request = 1;
-		client = 2;
-		tcp_server = 3;
-		tcp_node = 4;
-	}
-	return true;
-}
+unix_server server;
+review::IS args {"type","from_node","to_node","message","message2"};
 
 auto execute = [&](const short int index){
 	maria_wrapper sql("error_log",__FILE__);

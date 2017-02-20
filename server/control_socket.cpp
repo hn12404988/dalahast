@@ -81,11 +81,11 @@ using websocketpp::lib::bind;
 typedef server::message_ptr message_ptr;
 typedef websocketpp::lib::shared_ptr<websocketpp::lib::thread> thread_ptr;
 
-std::string port {"8000"};
-std::string server_index;
+std::string port {"8888"};
 const size_t amount {10};
 da::IS location;
 short int location_amount;
+std::string root_prefix;
 std::map<std::thread::id,client_core*> client_index;
 typedef std::map<std::thread::id,client_core*> client_type;
 
@@ -124,9 +124,10 @@ void on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
 	 * 
 	 **/
 	node = message.substr(0,i);
+	node = root_prefix+node+".socket";
 	message = message.substr(i);
 	for(i=1;i<location_amount;++i){
-		if(location[i].find(node)!=std::string::npos){
+		if(location[i]==node){
 			break;
 		}
 	}
@@ -160,24 +161,24 @@ void on_socket_init(websocketpp::connection_hdl, boost::asio::ip::tcp::socket & 
 void build_index(std::vector<thread_ptr> *ts){
 	for (int i = 0; i < ts->size(); ++i) {
 		client_index[(*ts)[i]->get_id()] = new client_core;
-		client_index[(*ts)[i]->get_id()]->import_location(&location);
-		client_index[(*ts)[i]->get_id()]->set_error_node(0,__FILE__,server_index);
+		client_index[(*ts)[i]->get_id()]->import_location(&location,5);
+		client_index[(*ts)[i]->get_id()]->set_error_node(0,__FILE__);
 	}
 }
 
 bool init(){
 	dalahast da(__FILE__);
-	server_index = da.server_index;
 	std::string str;
 	int j;
+	root_prefix = da.root+da::server_prefix;
 	if(da.db_open(da.root+"/sqlite/info.db")==false){
 		return false;
 	}
-	str = "select name from node_info where server = "+da.server_index+" and interface = 'FILE' and 'private' = 0";
+	str = "select node from node where interface = 'FILE' and 'private' = 0";
 	if(da.db_is_exec(str)==false){
 		return false;
 	}
-	location.push_back(da.get_center_ip()+":8889");
+	location.push_back(da.root+da::server_prefix+"private/error_node.socket");
 	j = da.is.size()-1;
 	for(;j>=0;--j){
 		location.push_back(da.root+da::server_prefix+da.is[j]+".socket");

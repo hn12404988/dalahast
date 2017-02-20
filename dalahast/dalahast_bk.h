@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string>
 #include <dalahast/tool/iss_tool.h>
+#include <hast/client_core.h>
 
 namespace da{
 	const std::string server_prefix {"/server/"};
@@ -32,12 +33,13 @@ static int callback_is(void *ptr, int argc, char **argv, char **azColName){
 	return 0;
 }
 
-class dalahast : public da_type, public iss_tool{
+class dalahast : public client_core, public da_type, public iss_tool{
 private:
 	sqlite3 *db {nullptr};
+	da::IS location;
+	std::string remote_db;
 	std::string node;
 	void error(std::string error_msg);
-	bool now_is_error_log {false};
 public:
 	std::string root;
 	std::string server_index;
@@ -52,17 +54,12 @@ public:
 	bool db_open(std::string db_name);
 	std::string command(std::string command);
 	bool location_log(da::IS &location, da::IsH &fire);
-	bool port_log(std::string port_name);
-	bool port_log(int port);
+	bool port_log(std::string port);
 	bool anti(bool b);
 	bool private_node(bool b);
 	bool freeze(bool b);
 	bool check(bool b);
-	std::string get_ip(short int i);
-	std::string get_port(short int i,std::string name);
-	short int get_server_id(std::string ip);
-	std::string get_port_name(short int server_id,std::string port);
-	short int my_server_id();
+	std::string get_center_ip();
 	bool error_log(std::string msg);
 };
 #include <dalahast/dalahast.cpp>
