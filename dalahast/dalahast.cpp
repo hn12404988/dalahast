@@ -116,8 +116,10 @@ bool dalahast::db_exec(std::string query){
 	return true;
 }
 
-bool dalahast::db_iss_exec(std::string query){
-	clear_3d<da::ISS>(iss);
+bool dalahast::db_iss_exec(std::string query,bool concat){
+	if(concat==false){
+		clear_3d<da::ISS>(iss);
+	}
 	if(db==nullptr){
 		error("db==nullptr in db_res_exec");
 		return false;
@@ -134,8 +136,10 @@ bool dalahast::db_iss_exec(std::string query){
 	return true;
 }
 
-bool dalahast::db_is_exec(std::string query){
-	is.clear();
+bool dalahast::db_is_exec(std::string query,bool concat){
+	if(concat==false){
+		is.clear();
+	}
 	if(db==nullptr){
 		error("db==nullptr in db_res_exec");
 		return false;
@@ -444,6 +448,7 @@ short int dalahast::my_server_id(){
 			return (short int)std::stoi(is[0]);
 		}
 		else{
+			error_log("Can't get my_server_id");
 			return -1;
 		}
 	}
@@ -460,4 +465,28 @@ bool dalahast::error_log(std::string msg){
 	else{
 		return true;
 	}
+}
+
+bool dalahast::all_main_port(){
+	if(db_open(root+"/sqlite/tcp.db")==false){
+		return false;
+	}
+	ss_tool::str = "select server_id,port from port where name = 'main_port'";
+	if(db_iss_exec(ss_tool::str)==false){
+		return false;
+	}
+	int i;
+	i = iss.size()-1;
+	for(;i>=0;--i){
+		ss_tool::str = "select ip from server where id = "+(*iss[i])["server_id"]+" limit 1";
+		if(db_is_exec(ss_tool::str)==false){
+			return false;
+		}
+		if(is.size()==0){
+			error_log("Can't get ip from server in all_main_port");
+			return false;
+		}
+		(*iss[i])["ip"] = is[0];
+	}
+	return true;
 }

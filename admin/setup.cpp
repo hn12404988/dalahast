@@ -12,6 +12,7 @@ int main(){
 	std::string str,local_ip,server_index,local_port;
 	int i;
 	bool tcp {true};
+	bool to_center {true};
 	/**
 	 * Init
 	 **/

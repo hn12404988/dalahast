@@ -8,6 +8,7 @@
 
 namespace da{
 	const std::string server_prefix {"/server/"};
+	const bool CONCAT {true};
 }
 
 static int callback_iss(void *ptr, int argc, char **argv, char **azColName){
@@ -47,8 +48,8 @@ public:
 	dalahast();
 	~dalahast();
 	bool db_exec(std::string query);
-	bool db_iss_exec(std::string query);
-	bool db_is_exec(std::string query);
+	bool db_iss_exec(std::string query,bool concat = false);
+	bool db_is_exec(std::string query,bool concat = false);
 	bool db_open(std::string db_name);
 	std::string command(std::string command);
 	bool location_log(da::IS &location, da::IsH &fire);
@@ -64,6 +65,7 @@ public:
 	std::string get_port_name(short int server_id,std::string port);
 	short int my_server_id();
 	bool error_log(std::string msg);
+	bool all_main_port();
 };
 #include <dalahast/dalahast.cpp>
 #endif dalahast_h

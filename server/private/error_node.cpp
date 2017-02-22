@@ -1,145 +1,125 @@
 #include <hast/unix_server.h>
 #include <dalahast/dalahast.h>
+#include <dalahast/tool/ss_tool.h>
 
 /**
  * args [Raw Input]: A string in json form. 
- * args [message2]: It can be `flag` when type = `socket` or it can be `reply` when type = `request`.
+ * args [message2]: It is `error_flag` when type = `socket`, and it is `reply` when type = `request`.
  **/
 unix_server server;
-review::IS args {"type","from_node","to_node","message","message2"};
+da::IS args {"type","from_node","to_node","message","message2"};
+std::string root_prefix;
+short int root_len;
+std::string my_server_id;
 
 auto execute = [&](const short int index){
-	maria_wrapper sql("error_log",__FILE__);
+	dalahast da(__FILE__);
 	ss_tool _ss;
-	std::string to_server,ip,port;
+	std::string str,to_server,to_node;
 	_ss.import_fixed(&args);
-	review::SS ss;
+	da::SS ss;
 	short int i;
-	if(sql_pre(&sql)==false){
-		server.echo_back_error(server.socketfd[index],"Thread fail on initiating");
-		server.done(index);
-		return;
-	}
-	while(server.msg_to_args(index)==true){
-		sql.reset();
+	while(server.msg_recv(index)==true){
+		/**
+		 * Parsing args
+		 **/
 		if(_ss.json_to(ss,server.raw_msg[index])==false){
-			sql.pre[error]->setString(1,this_server);
-			sql.pre[error]->setString(2,server.raw_msg[index]);
-			sql.pre[error]->setString(3,"Fail on parsing");
-			sql.update_execute(error);
-			server.echo_back_result(server.socketfd[index],false);
-			continue;
-		}
-		if(ss["from_node"].length()<=root_len+4){
-			sql.pre[error]->setString(1,this_server);
-			sql.pre[error]->setString(2,server.raw_msg[index]);
-			sql.pre[error]->setString(3,"Length of from_node string is too short");
-			sql.update_execute(error);
-			server.echo_back_result(server.socketfd[index],false);
-			continue;
-		}
-		ss["from_node"] = ss["from_node"].substr(root_len);
-		ss["from_node"].resize(ss["from_node"].length()-4);
-		if(ss["to_node"]!="NULL"){
-			i = ss["to_node"].find(":");
-			if(i==std::string::npos){
-				//unix
-				to_server = this_server;
-				if(ss["to_node"].length()<=root_len+7){
-					sql.pre[error]->setString(1,this_server);
-					sql.pre[error]->setString(2,server.raw_msg[index]);
-					sql.pre[error]->setString(3,"Length of to_node string is too short");
-					sql.update_execute(error);
-					server.echo_back_result(server.socketfd[index],false);
+			if(da.db_open(da.root+"/sqlite/error_log.db")==true){
+				str = "insert into error_node_recv (message,time) values ('"+server.raw_msg[index]+"',datetime('now'))";
+				if(da.db_exec(str)==true){
+					server.echo_back_error(server.socketfd[index],"Fail on parsing args");
 					continue;
 				}
-				ss["to_node"] = ss["to_node"].substr(root_len);
-				ss["to_node"].resize(ss["to_node"].length()-7);
 			}
-			else{
-				//tcp
-				ip = ss["to_node"].substr(0,i);
-				port = ss["to_node"].substr(i+1);
-				sql.pre[tcp_server]->setString(1,ip);
-				sql.pre[tcp_server]->setString(2,ip);
-				sql.res_execute(tcp_server);
-				if(sql.res==nullptr || sql.res->next()==false){
-					sql.pre[error]->setString(1,this_server);
-					sql.pre[error]->setString(2,server.raw_msg[index]);
-					sql.pre[error]->setString(3,"Can't find tcp_server");
-					sql.update_execute(error);
-					server.echo_back_result(server.socketfd[index],false);
-					continue;
+			std::cout << "Fail on opening error_log database, so here are the messages" << std::endl;
+			std::cout << "Fail on parsing args" << std::endl;
+			std::cout << server.raw_msg[index] << std::endl;
+			server.echo_back_error(server.socketfd[index],"Fail on parsing args");
+			continue;
+		}
+		/**
+		 * Deal with from_node
+		 **/
+		if(ss["from_node"].substr(0,root_len)==root_prefix){
+			ss["from_node"] = ss["from_node"].substr(root_len);
+		}
+		i = ss["from_node"].length();
+		if(ss["from_node"].substr(i-4)==".cpp"){
+			ss["from_node"].resize(i-4);
+		}
+		/**
+		 * Deal with to_node
+		 **/
+		i = ss["to_node"].find(":");
+		if(i==std::string::npos){
+			//unix
+			if(ss["to_node"].substr(0,root_len)==root_prefix){
+				ss["to_node"] = ss["to_node"].substr(root_len);
+			}
+			i = ss["to_node"].length();
+			if(ss["to_node"].substr(i-4)==".cpp"){
+				ss["to_node"].resize(i-4);
+			}
+			to_server = my_server_id;
+			to_node = ss["to_node"];
+		}
+		else{
+			//tcp
+			to_server = ss["to_node"].substr(0,i);
+			to_node = ss["to_node"].substr(i+1);
+			i = da.get_server_id(to_server);
+			if(i>=0){
+				to_server = std::to_string(i);
+				str = da.get_port_name(i,to_node);
+				if(str!=""){
+					to_node = str;
 				}
-				to_server = sql.res->getString(1);
-				sql.pre[tcp_node]->setString(1,port);
-				sql.res_execute(tcp_server);
-				if(sql.res==nullptr || sql.res->next()==false){
-					sql.pre[error]->setString(1,this_server);
-					sql.pre[error]->setString(2,server.raw_msg[index]);
-					sql.pre[error]->setString(3,"Can't find tcp_node");
-					sql.update_execute(error);
-					server.echo_back_result(server.socketfd[index],false);
-					continue;
-				}
-				ss["to_node"] = sql.res->getString(1);
 			}
 		}
 		if(ss["type"]=="request"){
-			sql.pre[request]->setString(1,this_server);
-			sql.pre[request]->setString(2,ss["from_node"]);
-			sql.pre[request]->setString(3,to_server);
-			sql.pre[request]->setString(4,ss["to_node"]);
-			sql.pre[request]->setString(5,ss["message"]);
-			sql.pre[request]->setString(6,ss["message2"]);
-			sql.update_execute(request);
+			str = "insert into request (from_node,to_server,to_node,message,reply,time) values ('"+ss["from_node"]+"',"+to_server+",'"+to_node+"','"+ss["message"]+"','"+ss["message2"]+"',datetime('now'))";
 		}
-		else if(ss["type"]=="client"){
-			sql.pre[client]->setString(1,this_server);
-			sql.pre[client]->setString(2,ss["from_node"]);
-			sql.pre[client]->setString(3,to_server);
-			sql.pre[client]->setString(4,ss["to_node"]);
-			sql.pre[client]->setString(5,ss["message"]);
-			sql.pre[client]->setString(6,ss["message2"]);
-			sql.update_execute(client);
+		else if(ss["type"]=="socket"){
+			str = "insert into socket (from_node,to_server,to_node,message,error_flag,time) values ('"+ss["from_node"]+"',"+to_server+",'"+to_node+"','"+ss["message"]+"','"+ss["message2"]+"',datetime('now'))";
 		}
 		else{
-			sql.pre[error]->setString(1,this_server);
-			sql.pre[error]->setString(2,server.raw_msg[index]);
-			sql.pre[error]->setString(3,"'type' doesn't exist");
-			sql.update_execute(error);
-			server.echo_back_result(server.socketfd[index],false);
+			server.echo_back_error(server.socketfd[index],"type invalid");
 			continue;
 		}
-		server.echo_back_result(server.socketfd[index],sql.something_wrong);
+		if(da.db_open(da.root+"/sqlite/error_log.db")==true){
+			if(da.db_exec(str)==true){
+				server.echo_back_msg(server.socketfd[index],"1");
+			}
+			else{
+				server.echo_back_error(server.socketfd[index],"Fail on inserting");	
+			}
+		}
+		else{
+			server.echo_back_error(server.socketfd[index],"Fail on open error_log database");
+		}
 	}
 	server.done(index);
 	return;
 };
 
 void log(){
-	configure conf(__FILE__);
-	conf.args_log(&args);
-	conf.anti_data_racing(false);
-	conf.private_node(true,"JSON");
-	conf.sql_insert_log("[error_log,error_log,error_log]","[request,client,error_node_receive]");
-	conf.sql_select_log("[server,node]","[server,info]");
+	dalahast da(__FILE__);
+	da.private_node(true);
 }
 
 bool init(){
-	configure conf(__FILE__);
-	std::string str;
-	this_server = conf.server;
-	str = conf.get_server_root();
-	root_len = str.length();
-	if(sql_pre(&conf,true)==false){
-		std::cout << "/*********** Init Fail ****************/" << std::endl;
-		std::cout << "Server: " << conf.server << std::endl;
-		std::cout << "Node: " << conf.node << std::endl;
-		conf.node_crash_log();
+	dalahast da(__FILE__);
+	short int i;
+	root_prefix = da.root+da::server_prefix;
+	root_len = root_prefix.length();
+	i = da.my_server_id();
+	if(i==-1){
 		return false;
 	}
-	return true;
+	else{
+		my_server_id = std::to_string(i);
+		return true;
+	}
 }
 
 int main (int argc,char* argv[]){
@@ -148,11 +128,23 @@ int main (int argc,char* argv[]){
 		return 0;
 	}
 	server.execute = execute;
-	server.set_args(nullptr);
 	if(init()==true){
 		if(server.init(__FILE__)==true){
 			server.start_accept();
 		}
+		else{
+			dalahast da(__FILE__);
+			da.error_log("server.init return false");
+			return 0;
+		}
+		dalahast da(__FILE__);
+		da.error_log("server crash");
+		return 0;
+	}
+	else{
+		dalahast da(__FILE__);
+		da.error_log("init() return false");
+		return 0;
 	}
 	return 0;
 

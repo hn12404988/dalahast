@@ -1,43 +1,50 @@
-#include <review/maria.h>
-#include <review/unix_server.h>
-#include <review/configure.h>
-#include <review/iss_tool.h>
-#include <review/is_tool.h>
-#include <review/ii_tool.h>
-#include <review/review_type.h>
+#include <hast/unix_server.h>
+#include <dalahast/dalahast.h>
+#include <dalahast/tool/iss_tool.h>
+#include <dalahast/tool/ii_tool.h>
+
 
 unix_server server;
-review::IS args {"up_tag"};
-review_type rtype;
-review::IS table {"dalahast","request","socket"};
-review::IS up_tag {"dalahast","request","socket"};
-review::IS database {"error_log","error_log","error_log"};
-std::string up_string;
+da::IS args {"up_tag"};
+da::IS table {"dalahast","error","error_node_recv","request","socket"};
+std::string up_string,database_location;
 short int max {0};
 
 auto execute = [&](const short int index){
+	dalahast da(__FILE__);
 	std::string str;
-	maria sql("error_log");
-	sql.build_statement();
-	review::ISS iss;
-	review::II amount;
-	review::SS send;
+	da::II amount;
+	da::SS send,param;
 	iss_tool _iss;
 	ss_tool *_ss {&_iss};
-	ii_tool<review::II> _ii;
+	ii_tool<da::II> _ii;
 	short int i,target;
 	send["up_tag"] = up_string;
-	for(i=0;i<up_tag.size();++i){
+	for(i=0;i<table.size();++i){
 		amount.push_back(0);
 	}
-	while(server.msg_to_args(index)==true){
-		sql.reset();
-		if(server.args[index]["up_tag"]=="init"){
+	_ss->import_fixed(&args);
+	while(server.msg_recv(index)==true){
+		/**
+		 * 
+		 **/
+		if(_ss->json_to(param,server.raw_msg[index])==false){
+			server.echo_back_error(server.socketfd[index],"Fail on parsing args");
+			continue;
+		}
+		if(da.db_open(database_location)==false){
+			server.echo_back_error(server.socketfd[index],"Fail on opening error_log database");
+			continue;
+		}
+		/**
+		 * 
+		 **/
+		if(param["up_tag"]=="init"){
 			target = 0;
 		}
 		else{
 			for(i=0;i<max;++i){
-				if(server.args[index]["up_tag"]==up_tag[i]){
+				if(param["up_tag"]==table[i]){
 					target = i;
 					break;
 				}
@@ -47,33 +54,33 @@ auto execute = [&](const short int index){
 				continue;
 			}
 		}
+		/**
+		 * 
+		 **/
 		for(i=0;i<max;++i){
-			sql.to_database(database[i].c_str());
 			if(i==target){
 				str = "select * from "+table[i];
-				sql.ISS_send(str,iss);
-				if(sql.something_wrong==true){
+				if(da.db_iss_exec(str)==false){
 					break;
 				}
-				amount[i] = iss.size();
+				amount[i] = da.iss.size();
 				_iss.all_quote = true;
 				_iss.escape_quote = true;
-				_iss.to_array(iss);
+				_iss.to_array(da.iss);
 				_iss.all_quote = false;
 				_iss.escape_quote = false;
 				send["content"] = _iss.outcome;
 			}
 			else{
 				str = "select count(*) from "+table[i];
-				sql.res_send(str);
-				if(sql.something_wrong==true || sql.res->next()==false){
+				if(da.db_is_exec(str)==false){
 					break;
 				}
-				amount[i] = sql.res->getInt(1);
+				amount[i] = std::stoi(da.is[0]);
 			}
 		}
 		if(i<max){
-			server.echo_back_error(server.socketfd[index],"Fail on getting data from SQ");
+			server.echo_back_error(server.socketfd[index],"Fail on getting data from SQLite");
 			continue;
 		}
 		_ii.to_array(amount);
@@ -81,31 +88,22 @@ auto execute = [&](const short int index){
 		_ss->to_json(send);
 		server.echo_back_msg(server.socketfd[index],_ss->outcome);
 	}
-	rtype.clear_3d<review::ISS>(iss);
 	server.done(index);
 	return;
 };
 
 void log(){
-	configure conf(__FILE__);
-	is_tool _is;
-	std::string tmp;
-	conf.args_log(&args);
-	conf.anti_data_racing(false);
-	conf.private_node(false);
-	_is.to_array(database);
-	tmp = _is.outcome;
-	_is.to_array(table);
-	conf.sql_select_log(tmp,_is.outcome);
+	dalahast da(__FILE__);
 }
 
 void init(){
-	configure conf(__FILE__);
+	dalahast da(__FILE__);
 	is_tool _is;
 	_is.set_array_separate('"');
-	_is.to_array(up_tag);
+	_is.to_array(table);
 	up_string = _is.outcome;
-	max = up_tag.size();
+	max = table.size();
+	database_location = da.root+"/sqlite/error_log.db";
 }
 
 int main (int argc, char* argv[]){
@@ -114,12 +112,15 @@ int main (int argc, char* argv[]){
 		return 0;
 	}
 	server.execute = execute;
-	server.set_args(&args);
 	init();
 	if(server.init(__FILE__)==true){
 		server.start_accept();
+		dalahast da(__FILE__);
+		da.error_log("node crash");
 	}
-	configure conf(__FILE__);
-	conf.node_crash_log();
+	else{
+		dalahast da(__FILE__);
+		da.error_log("server.init return false");
+	}
 	return 0;
 }

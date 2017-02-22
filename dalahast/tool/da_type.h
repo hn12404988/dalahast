@@ -49,6 +49,8 @@ public:
 		void clear_3d(T &target, std::size_t start, std::size_t end);
 	template<typename T>
 		void clear_3d(T &target,std::size_t start);
+	template<typename T>
+		void concat_3d(T &main,T &sub);
 };
 
 
@@ -100,4 +102,31 @@ void da_type::clear_3d(T &target,std::size_t start){
 	}
 }
 
+template<typename T>
+void da_type::concat_3d(T &main,T &sub){
+	std::size_t i,j,k,l;
+	i = main.size()-1;
+	j = i;
+	for(;i>=0;--i){
+		if(main[i]!=nullptr){
+			++i;
+			break;
+		}
+	}
+	l = sub.size();
+	for(k=0;j>=i,k<l;++i,++k){
+		if(sub[k]==nullptr){
+			--i;
+			continue;
+		}
+		main[i] = sub[k];
+		sub[k] = nullptr;
+	}
+	for(;k<l;++k){
+		if(sub[k]==nullptr){
+			continue;
+		}
+		main.push_back(sub[k]);
+	}
+}
 #endif
