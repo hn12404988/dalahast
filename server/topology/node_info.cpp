@@ -1,66 +1,168 @@
-#include <review/maria_wrapper.h>
-#include <review/unix_server.h>
-#include <review/configure.h>
-#include <review/ss_tool.h>
+#include <hast/unix_server.h>
+#include <hast/client_core.h>
+#include <dalahast/dalahast.h>
+#include <dalahast/tool/ss_tool.h>
 
 unix_server server;
-review::IS args {"node_id"};
-short int get_info {0};
+da::IS args {"node_id"}; // `server_index` + '_' + `node_name`
+da::IS location;
+da::IS server_index;
+std::string my_server_id;
+std::string database_location;
 
 auto execute = [&](const short int index){
-	maria_wrapper sql("node",__FILE__);
-	if(sql.prepare("select node_type,interface,input,input_form,anti_data_racing from node.info where server = ? and node = ? limit 1")==-1){
-		server.echo_back_error(server.socketfd[index],"Thread fail on initiating");
-		server.done(index);
-		return;
-	}
+	dalahast da(__FILE__);
+	client_core client;
+	client.import_location(&location);
+	client.set_error_node(0,__FILE__);
 	ss_tool _ss;
+	_ss.import_fixed(&args);
 	_ss.all_quote = true;
-	review::SS ss;
-	std::string server_index,node;
+	da::SS param,ss;
+	std::string str,server_id,node;
 	short int i;
-	while(server.msg_to_args(index)==true){
-		sql.reset();
-		i = server.args[index]["node_id"].find("_");
-		if(i==std::string::npos){
+	while(server.msg_recv(index)==true){
+		if(_ss.json_to(param,server.raw_msg[index])==false){
 			server.echo_back_error(server.socketfd[index],"Fail on parsing args");
 			continue;
 		}
-		server_index = server.args[index]["node_id"].substr(0,i);
-		node = server.args[index]["node_id"].substr(i+1);
-		sql.pre[0]->setString(1,server_index);
-		sql.pre[0]->setString(2,node);
-		sql.res_execute(get_info);
-		if(sql.res==nullptr){
-			server.echo_back_error(server.socketfd[index],"SQL fail on getting info");
+		i = param["node_id"].find("_");
+		if(i==std::string::npos){
+			server.echo_back_error(server.socketfd[index],"Fail on parsing node_id");
 			continue;
 		}
-		if(sql.res->next()==false){
-			server.echo_back_msg(server.socketfd[index],"1");
+		server_id = param["node_id"].substr(0,i);
+		node = param["node_id"].substr(i+1);
+		/**
+		 * 
+		 **/
+		if(server_id==my_server_id){
+			if(da.db_open(database_location)==false){
+				server.echo_back_error(server.socketfd[index],"Fail on opening database");
+				continue;
+			}
+			str = "select * from node where node = '"+node+"' limit 1";
+			if(da.db_iss_exec(str)==false){
+				server.echo_back_error(server.socketfd[index],"Fail on getting data");
+				continue;
+			}
+			if(da.iss.size()!=1){
+				server.echo_back_error(server.socketfd[index],"Can't find node");
+				continue;
+			}
+			_ss.to_json(*da.iss[0]);
+			server.echo_back_msg(server.socketfd[index],_ss.outcome);
 			continue;
 		}
-		ss["node"] = node;
-		ss["node_type"] = sql.res->getString(1);
-		ss["interface"] = sql.res->getString(2);
-		ss["input"] = sql.res->getString(3);
-		ss["input_form"] = sql.res->getString(4);
-		ss["anti_data_racing"] = sql.res->getString(5);
-		_ss.to_json(ss);
-		server.echo_back_msg(server.socketfd[index],_ss.outcome);
+		else{
+			i = server_index.size()-1;
+			for(;i>=0;--i){
+				if(server_index[i]==server_id){
+					break;
+				}
+			}
+			if(i>=0){
+				str = "topology/node_info"+server.raw_msg[index];
+				if(client.fire(i,str)>0){
+					server.echo_back_error(server.socketfd[index],"Fail on fire");
+					continue;
+				}
+				if(str==""){
+					server.echo_back_error(server.socketfd[index],"Empty reply");
+				}
+				else{
+					server.echo_back_msg(server.socketfd[index],str);
+				}
+				continue;
+			}
+			else{
+				i = server_index.size()-1;
+				for(;i>=0;--i){
+					str = "topology/node_info"+server.raw_msg[index];
+					if(client.fire(i,str)>0){
+						server.echo_back_error(server.socketfd[index],"Fail on fire");
+						break;
+					}
+					if(str=="1"){
+						continue;
+					}
+					if(str[0]=='0' || str==""){
+						server.echo_back_error(server.socketfd[index],"Empty reply");
+						break;
+					}
+					else{
+						if(str[0]=='{'){
+							server.echo_back_msg(server.socketfd[index],str);
+							break;
+						}
+						else{
+							server.echo_back_error(server.socketfd[index],"Reply has wrong format");
+							break;
+						}
+					}
+				}
+				if(i==-1){
+					server.echo_back_msg(server.socketfd[index],"1");
+				}
+			}
+		}
 	}
 	server.done(index);
 	return;
 };
 
-void log(){
-	configure conf(__FILE__);
-	conf.args_log(&args);
-	conf.anti_data_racing(false);
-	conf.private_node(false);
-	conf.sql_select_log("[node]","[info]");
+bool build_location(dalahast &da, da::IsH *fire = nullptr){
+	int i;
+	is_tool _is;
+	if(da.all_main_port()==false){
+		da.error_log("all_main_port() return false");
+		return false;
+	}
+	location.push_back(da.root+da::server_prefix+"private/error_node.socket");
+	if(fire!=nullptr){
+		fire->push_back(da::fire);
+	}
+	i = da.iss.size()-1;
+	for(;i>=0;--i){
+		if((*da.iss[i])["server_id"]==my_server_id){
+			continue;
+		}
+		server_index.push_back((*da.iss[i])["server_id"]);
+		location.push_back((*da.iss[i])["ip"]+":"+(*da.iss[i])["port"]);
+		if(fire!=nullptr){
+			fire->push_back(da::fireNstore);
+		}
+	}
+	i = location.size();
+	_is.delete_repeat(location);
+	if(i!=location.size()){
+		da.error_log("location repeat");
+		return false;
+	}
+	return true;
 }
 
-void init(){
+void log(){
+	dalahast da(__FILE__);
+	da::IsH fire;
+	my_server_id = std::to_string(da.my_server_id());
+	build_location(da,&fire);
+	da.location_log(location,fire);
+}
+
+bool init(){
+	dalahast da(__FILE__);
+	short int i;
+	database_location = da.root+"/sqlite/info.db";
+	i  = da.my_server_id();
+	if(i==-1){
+		return false;
+	}
+	my_server_id = std::to_string(i);
+	if(build_location(da)==false){
+		return false;
+	}
+	return true;
 }
 
 int main (int argc, char* argv[]){
@@ -69,10 +171,23 @@ int main (int argc, char* argv[]){
 		return 0;
 	}
 	server.execute = execute;
-	server.set_args(&args);
-	init();
-	if(server.init(__FILE__)==true){
-		server.start_accept();
+	if(init()==true){
+		if(server.init(__FILE__)==true){
+			server.start_accept();
+		}
+		else{
+			dalahast da(__FILE__);
+			da.error_log("server.init return false");
+			return 0;
+		}
+		dalahast da(__FILE__);
+		da.error_log("server crash");
+		return 0;
+	}
+	else{
+		dalahast da(__FILE__);
+		da.error_log("init() return false");
+		return 0;
 	}
 	return 0;
 }

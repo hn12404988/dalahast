@@ -141,6 +141,13 @@ bool build_location(dalahast &da, da::IsH *fire = nullptr){
 void log(){
 	dalahast da(__FILE__);
 	da::IsH fire;
+	short int i;
+	i  = da.my_server_id();
+	if(i==-1){
+		da.error_log("Can't get my_server_id in log()");
+		return;
+	}
+	my_server_id = std::to_string(i);
 	if(build_location(da,&fire)==true){
 		da.location_log(location,fire);
 	}
@@ -149,7 +156,6 @@ void log(){
 bool init(){
 	dalahast da(__FILE__);
 	short int i;
-	is_tool _is;
 	database_location = da.root+"/sqlite/info.db";
 	i  = da.my_server_id();
 	if(i==-1){

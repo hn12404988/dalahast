@@ -127,7 +127,7 @@ int main(){
 		std::cout << "Fail on opening database 'error_log'" << std::endl;
 		return 0;
 	}
-	str = "create table if not exists dalahast (node CHAR(100), message TEXT, time DATETIME)";
+	str = "create table if not exists dalahast (node CHAR(100), message TEXT, message2 TEXT, time DATETIME)";
 	if(da.db_exec(str)==false){
 		std::cout << "Fail on building table 'dalahast'" << std::endl;
 		return 0;

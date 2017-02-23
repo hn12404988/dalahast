@@ -81,7 +81,7 @@ using websocketpp::lib::bind;
 typedef server::message_ptr message_ptr;
 typedef websocketpp::lib::shared_ptr<websocketpp::lib::thread> thread_ptr;
 
-std::string port {"8888"};
+std::string port;
 const size_t amount {10};
 da::IS location;
 short int location_amount;
@@ -170,6 +170,11 @@ bool init(){
 	dalahast da(__FILE__);
 	std::string str;
 	int j;
+	j = da.my_server_id();
+	if(j==-1){
+		return false;
+	}
+	port = da.get_port(j,"web_port");
 	root_prefix = da.root+da::server_prefix;
 	if(da.db_open(da.root+"/sqlite/info.db")==false){
 		return false;
@@ -189,6 +194,9 @@ bool init(){
 
 void log(){
 	dalahast da(__FILE__);
+	short int i;
+	i = da.my_server_id();
+	port = da.get_port(i,"web_port");
 	da.port_log(port);
 }
 

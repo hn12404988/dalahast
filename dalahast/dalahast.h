@@ -37,7 +37,8 @@ class dalahast : public da_type, public iss_tool{
 private:
 	sqlite3 *db {nullptr};
 	std::string node;
-	void error(std::string error_msg);
+	void error(std::string error_msg,std::string error_msg2 = "");
+	void get_root();
 	bool now_is_error_log {false};
 public:
 	std::string root;

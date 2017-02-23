@@ -1,33 +1,11 @@
 dalahast::dalahast(){
-	short int i;
-	i = 100;
-	std::string read {"README.md"}, cd {"../"};
-	if(command("ls | grep "+read)!="1"){
-		root = command("pwd");
-		root.resize(root.length()-1);
-	}
-	else{
-		for(;i>=0;--i){
-			if(command("cd "+cd+" && ls | grep "+read)!=""){
-				root = command("cd "+cd+" && pwd");
-				break;
-			}
-			cd = cd + cd;
-		}
-		if(root!=""){
-			root.resize(root.length()-1);
-		}
-		else{
-			std::cout << "Fail on detecting root" << std::endl;
-			return;
-		}
-	}
+	get_root();
 }
 
 dalahast::dalahast(const char* node_name){
 	short int i;
 	std::string read;
-	dalahast();
+	get_root();
 	node = node_name;
 	i = node.length()-1;
 	for(;i>=0;--i){
@@ -47,12 +25,38 @@ dalahast::dalahast(const char* node_name){
 	 * 
 	 **/
 	if(db_open(root+"/sqlite/info.db")==true){
-		read = "select node from node where node = '"+node+"' limit 1";
+		read = "select node from node where node = '"+node+"'";
 		if(db_is_exec(read)==true){
 			if(is.size()==0){
 				read = "insert into node (node) values ('"+node+"')";
 				db_exec(read);
 			}
+		}
+	}
+}
+
+void dalahast::get_root(){
+	short int i;
+	i = 100;
+	std::string read {".dalahast"}, cd {"../"};
+	if(command("ls -a | grep "+read)!="1"){
+		root = command("pwd");
+		root.resize(root.length()-1);
+	}
+	else{
+		for(;i>=0;--i){
+			if(command("cd "+cd+" && ls -a | grep "+read)!="1"){
+				root = command("cd "+cd+" && pwd");
+				break;
+			}
+			cd = cd + cd;
+		}
+		if(root!=""){
+			root.resize(root.length()-1);
+		}
+		else{
+			std::cout << "Fail on detecting root" << std::endl;
+			return;
 		}
 	}
 }
@@ -66,16 +70,17 @@ dalahast::~dalahast(){
 	is.clear();
 }
 
-void dalahast::error(std::string error_msg){
+void dalahast::error(std::string error_msg,std::string msg2){
 	if(now_is_error_log==true){
 		std::cout << "/******** Database error_log is dead, so here are the error message ********************/" << std::endl;
 		std::cout << "Node: " << node << std::endl;
-		std::cout << "Message: " << error_msg << std::endl;
+		std::cout << "Error_Message: " << error_msg << std::endl;
+		std::cout << "Message: " << msg2 << std::endl;
 		now_is_error_log = false;
 	}
 	else{
 		now_is_error_log = true;
-		error_msg = "insert into dalahast (node,message,time) values ('"+node+"','"+error_msg+"',datetime('now'))";
+		error_msg = "insert into dalahast (node,message,message2,time) values (\""+node+"\",\""+error_msg+"\",\""+msg2+"\",datetime('now'))";
 		if(db_open(root+"/sqlite/error_log.db")==true){
 			if(db_exec(error_msg)==true){
 				now_is_error_log = false;
@@ -108,7 +113,7 @@ bool dalahast::db_exec(std::string query){
 	if(sqlite3_exec(db, query.c_str(), nullptr, 0, &zErrMsg)!=SQLITE_OK){
 		ss_tool::str = "sqlite3_exec fail in db_exec: ";
 		ss_tool::str.append(zErrMsg);
-		error(ss_tool::str);
+		error(ss_tool::str,query);
 		//fprintf(stderr, "SQL error: %s\n", zErrMsg);
 		sqlite3_free(zErrMsg);
 		return false;
@@ -128,7 +133,7 @@ bool dalahast::db_iss_exec(std::string query,bool concat){
 	if(sqlite3_exec(db, query.c_str(), callback_iss, &iss, &zErrMsg)!=SQLITE_OK){
 		ss_tool::str = "sqlite3_exec fail in db_res_exec: ";
 		ss_tool::str.append(zErrMsg);
-		error(ss_tool::str);
+		error(ss_tool::str,query);
 		//fprintf(stderr, "SQL error: %s\n", zErrMsg);
 		sqlite3_free(zErrMsg);
 		return false;
@@ -148,7 +153,7 @@ bool dalahast::db_is_exec(std::string query,bool concat){
 	if(sqlite3_exec(db, query.c_str(), callback_is, &is, &zErrMsg)!=SQLITE_OK){
 		ss_tool::str = "sqlite3_exec fail in db_res_exec: ";
 		ss_tool::str.append(zErrMsg);
-		error(ss_tool::str);
+		error(ss_tool::str,query);
 		//fprintf(stderr, "SQL error: %s\n", zErrMsg);
 		sqlite3_free(zErrMsg);
 		return false;
@@ -179,7 +184,11 @@ std::string dalahast::command(std::string command){
 bool dalahast::location_log(da::IS &location, da::IsH &fire){
 	std::string to_ip,to_port,pre_root,my_index;
 	int i,j,pre_len;
-	my_index = my_server_id();
+	i = my_server_id();
+	if(i==-1){
+		return false;
+	}
+	my_index = std::to_string(i);
 	if(my_index==""){
 		error_log("Can't get server_id in location_log()");
 		return false;
@@ -263,6 +272,9 @@ bool dalahast::location_log(da::IS &location, da::IsH &fire){
 			error("fire_type invalid");
 			return false;
 		}
+		if(db_open(root+"/sqlite/topology.db")==false){
+			break;
+		}
 		db_exec(ss_tool::str);
 	}
 }
@@ -272,10 +284,10 @@ bool dalahast::anti(bool b){
 		return false;
 	}
 	if(b==true){
-		ss_tool::str = "update node set anti = 1 where node = '"+node+"' limit 1";
+		ss_tool::str = "update node set anti = 1 where node = '"+node+"'";
 	}
 	else{
-		ss_tool::str = "update node set anti = 0 where node = '"+node+"' limit 1";
+		ss_tool::str = "update node set anti = 0 where node = '"+node+"'";
 	}
 	return db_exec(ss_tool::str);
 }
@@ -285,10 +297,10 @@ bool dalahast::freeze(bool b){
 		return false;
 	}
 	if(b==true){
-		ss_tool::str = "update node set freeze = 1 where node = '"+node+"' limit 1";
+		ss_tool::str = "update node set freeze = 1 where node = '"+node+"'";
 	}
 	else{
-		ss_tool::str = "update node set freeze = 0 where node = '"+node+"' limit 1";
+		ss_tool::str = "update node set freeze = 0 where node = '"+node+"'";
 	}
 	return db_exec(ss_tool::str);
 }
@@ -298,10 +310,10 @@ bool dalahast::check(bool b){
 		return false;
 	}
 	if(b==true){
-		ss_tool::str = "update node set check = 1 where node = '"+node+"' limit 1";
+		ss_tool::str = "update node set check = 1 where node = '"+node+"'";
 	}
 	else{
-		ss_tool::str = "update node set check = 0 where node = '"+node+"' limit 1";
+		ss_tool::str = "update node set check = 0 where node = '"+node+"'";
 	}
 	return db_exec(ss_tool::str);
 }
@@ -311,10 +323,10 @@ bool dalahast::private_node(bool b){
 		return false;
 	}
 	if(b==true){
-		ss_tool::str = "update node set 'private' = 1 where node = '"+node+"' limit 1";
+		ss_tool::str = "update node set 'private' = 1 where node = '"+node+"'";
 	}
 	else{
-		ss_tool::str = "update node set 'private' = 0 where node = '"+node+"' limit 1";
+		ss_tool::str = "update node set 'private' = 0 where node = '"+node+"'";
 	}
 	return db_exec(ss_tool::str);
 }
@@ -337,7 +349,7 @@ bool dalahast::port_log(std::string port_name){
 	if(db_open(root+"/sqlite/info.db")==false){
 		return false;
 	}
-	ss_tool::str = "update node set interface = '"+port_name+"' where node = '"+node+"' limit 1";
+	ss_tool::str = "update node set interface = '"+port_name+"' where node = '"+node+"'";
 	return db_exec(ss_tool::str);
 }
 
@@ -345,7 +357,7 @@ bool dalahast::port_log(int port){
 	if(db_open(root+"/sqlite/info.db")==false){
 		return false;
 	}
-	ss_tool::str = "update node set interface = '"+std::to_string(port)+"' where node = '"+node+"' limit 1";
+	ss_tool::str = "update node set interface = '"+std::to_string(port)+"' where node = '"+node+"'";
 	return db_exec(ss_tool::str);
 }
 
@@ -363,7 +375,7 @@ std::string dalahast::get_ip(short int i){
 	if(db_open(root+"/sqlite/tcp.db")==false){
 		return "";
 	}
-	ss_tool::str = "select ip from server where id = "+std::to_string(i)+" limit 1";
+	ss_tool::str = "select ip from server where id = "+std::to_string(i);
 	if(db_is_exec(ss_tool::str)==false){
 		return "";
 	}
@@ -381,7 +393,7 @@ std::string dalahast::get_port(short int i,std::string name){
 	if(db_open(root+"/sqlite/tcp.db")==false){
 		return "";
 	}
-	ss_tool::str = "select port from port where server_id = "+std::to_string(i)+" and name = '"+name+"' limit 1";
+	ss_tool::str = "select port from port where server_id = "+std::to_string(i)+" and name = '"+name+"'";
 	if(db_is_exec(ss_tool::str)==false){
 		return "";
 	}
@@ -403,7 +415,7 @@ short int dalahast::get_server_id(std::string ip){
 	if(db_open(root+"/sqlite/tcp.db")==false){
 		return -1;
 	}
-	ss_tool::str = "select id from server where ip = '"+ip+"' limit 1";
+	ss_tool::str = "select id from server where ip = '"+ip+"'";
 	if(db_is_exec(ss_tool::str)==false){
 		return -1;
 	}
@@ -421,7 +433,7 @@ std::string dalahast::get_port_name(short int server_id,std::string port){
 	if(db_open(root+"/sqlite/tcp.db")==false){
 		return "";
 	}
-	ss_tool::str = "select name from port where server_id = "+std::to_string(server_id)+" and port = "+port+" limit 1";
+	ss_tool::str = "select name from port where server_id = "+std::to_string(server_id)+" and port = "+port;
 	if(db_is_exec(ss_tool::str)==false){
 		return "";
 	}
@@ -439,7 +451,7 @@ short int dalahast::my_server_id(){
 	if(db_open(root+"/sqlite/self.db")==false){
 		return -1;
 	}
-	ss_tool::str = "select value from self where key = 'server_id' limit 1";
+	ss_tool::str = "select value from self where key = 'server_id'";
 	if(db_is_exec(ss_tool::str)==false){
 		return -1;
 	}
@@ -478,7 +490,7 @@ bool dalahast::all_main_port(){
 	int i;
 	i = iss.size()-1;
 	for(;i>=0;--i){
-		ss_tool::str = "select ip from server where id = "+(*iss[i])["server_id"]+" limit 1";
+		ss_tool::str = "select ip from server where id = "+(*iss[i])["server_id"];
 		if(db_is_exec(ss_tool::str)==false){
 			return false;
 		}

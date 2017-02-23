@@ -15,15 +15,16 @@ auto execute = [&](const short int index){
 	client.import_location(&args);
 	client.set_error_node(0,__FILE__);
 	std::string str,info,topology;
-	da::ISS iss,iss_info,iss_topology;
+	da::ISS iss,iss2;
 	da::SS ss;
-	da::ISS::iterator it;
-	da::ISS::iterator it_end;
+	da::SS::iterator it;
+	da::SS::iterator it_end;
 	da::SS send;
 	iss_tool _iss;
 	ss_tool *_ss {&_iss};
-	int i;
+	int i,j;
 	while(server.msg_recv(index)==true){
+		dtype.clear_3d<da::ISS>(iss2);
 		info = "[]";
 		topology = "[]";
 		if(client.fireNstore(to_info,info)>0){
@@ -49,84 +50,104 @@ auto execute = [&](const short int index){
 			server.echo_back_error(server.socketfd[index],"Fail on parsing info");
 			continue;
 		}
+		/**
+		 * 
+		 **/
 		it = ss.begin();
 		it_end = ss.end();
+		dtype.clear_3d<da::ISS>(iss2);
 		for(;it!=it_end;++it){
-			
+			dtype.clear_3d<da::ISS>(iss);
+			str = it->first;
+			if(_iss.array_to(iss,it->second)==false){
+				break;
+			}
+			i = iss.size()-1;
+			for(;i>=0;--i){
+				(*iss[i])["server"] = str;
+				j = (*iss[i])["node"].find("/");
+				if(j==std::string::npos){
+					(*iss[i])["folder"] = "";
+				}
+				else{
+					(*iss[i])["folder"] = (*iss[i])["node"].substr(0,j);
+					(*iss[i])["node"] = (*iss[i])["node"].substr(j+1);
+				}
+			}
+			dtype.concat_3d<da::ISS>(iss2,iss);
 		}
-		
-
-
-
-
-
-
-
-
-
-
-
-
-		
-		sql.reset();
-		str = "select * from info";
-		sql.ISS_send(str,info);
-		it = info.begin();
-		it_end = info.end();
-		for(;it!=it_end;++it){
-			if((**it)["input"][0]=='['){
-				(**it)["input"] = (**it)["input"].substr(1);
-				(**it)["input"].pop_back();
-			}
-			i = (**it)["node"].find("/");
-			if(i==std::string::npos){
-				(**it)["folder"] = "";
-			}
-			else{
-				(**it)["folder"] = (**it)["node"].substr(0,i);
-				(**it)["node"] = (**it)["node"].substr(i+1);
-			}
+		if(it!=it_end){
+			server.echo_back_error(server.socketfd[index],"Fail on parsing iss_info");
+			continue;
 		}
-		str = "select * from topology";
-		sql.ISS_send(str,fire);
-		it = fire.begin();
-		it_end = fire.end();
-		for(;it!=it_end;++it){
-			i = (**it)["from_node"].find("/");
-			if(i==std::string::npos){
-				(**it)["from_folder"] = "";
-			}
-			else{
-				(**it)["from_folder"] = (**it)["from_node"].substr(0,i);
-				(**it)["from_node"] = (**it)["from_node"].substr(i+1);
-			}
-		}
-		it = fire.begin();
-		it_end = fire.end();
-		for(;it!=it_end;++it){
-			i = (**it)["to_node"].find("/");
-			if(i==std::string::npos){
-				(**it)["to_folder"] = "";
-			}
-			else{
-				(**it)["to_folder"] = (**it)["to_node"].substr(0,i);
-				(**it)["to_node"] = (**it)["to_node"].substr(i+1);
-			}
-		}
-		_iss.to_array(info);
+		_iss.to_array(iss2);
 		send["info"] = _iss.outcome;
-		_iss.to_array(fire);
+		/**
+		 * 
+		 **/
+		if(client.join(to_topology)==false){
+			server.echo_back_error(server.socketfd[index],"Fail on joining topology");
+			continue;
+		}
+		if(topology[0]=='0' || topology==""){
+			server.echo_back_error(server.socketfd[index],"topology return error");
+			continue;
+		}
+		if(_ss->json_to(ss,topology)==false){
+			server.echo_back_error(server.socketfd[index],"Fail on parsing topology");
+			continue;
+		}
+		/**
+		 * 
+		 **/
+		it = ss.begin();
+		it_end = ss.end();
+		dtype.clear_3d<da::ISS>(iss2);
+		for(;it!=it_end;++it){
+			dtype.clear_3d<da::ISS>(iss);
+			str = it->first;
+			if(_iss.array_to(iss,it->second)==false){
+				break;
+			}
+			i = iss.size()-1;
+			for(;i>=0;--i){
+				(*iss[i])["from_server"] = str;
+				/**
+				 * 
+				 **/
+				j = (*iss[i])["from_node"].find("/");
+				if(j==std::string::npos){
+					(*iss[i])["from_folder"] = "";
+				}
+				else{
+					(*iss[i])["from_folder"] = (*iss[i])["from_node"].substr(0,j);
+					(*iss[i])["from_node"] = (*iss[i])["from_node"].substr(j+1);
+				}
+				/**
+				 * 
+				 **/
+				j = (*iss[i])["to_node"].find("/");
+				if(j==std::string::npos){
+					(*iss[i])["to_folder"] = "";
+				}
+				else{
+					(*iss[i])["to_folder"] = (*iss[i])["to_node"].substr(0,j);
+					(*iss[i])["to_node"] = (*iss[i])["to_node"].substr(j+1);
+				}
+			}
+			dtype.concat_3d<da::ISS>(iss2,iss);
+		}
+		if(it!=it_end){
+			server.echo_back_error(server.socketfd[index],"Fail on parsing iss_topology");
+			continue;
+		}
+		_iss.to_array(iss2);
 		send["fire"] = _iss.outcome;
 		_ss->to_json(send);
-		if(sql.something_wrong==false){
-			server.echo_back_msg(server.socketfd[index],_ss->outcome);
-		}
-		else{
-			server.echo_back_sql_error(server.socketfd[index]);
-		}
+		server.echo_back_msg(server.socketfd[index],_ss->outcome);
 	}
-	dtype.clear_3d<da::ISS>(info);
-	dtype.clear_3d<da::ISS>(fire);
+	dtype.clear_3d<da::ISS>(iss);
+	dtype.clear_3d<da::ISS>(iss2);
 	server.done(index);
 	return;
 };
@@ -152,7 +173,7 @@ void log(){
 
 void init(){
 	dalahast da(__FILE__);
-	build_location(da,&fire);
+	build_location(da,nullptr);
 	to_info = 1;
 	to_topology = 2;
 }
