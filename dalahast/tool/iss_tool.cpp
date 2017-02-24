@@ -12,14 +12,23 @@ inline void iss_tool::iss_sync_size(da::ISS &iss){
 	is_tool::i = is_use.size();
 	while(i!=is_tool::i){
 		if(i>is_tool::i){
-			iss[i-1]->clear();
-			delete iss[i-1];
+			if(iss[i-1]!=nullptr){
+				iss[i-1]->clear();
+				delete iss[i-1];
+				iss[i-1] = nullptr;
+			}
 			iss.pop_back();
 			--i;
 		}
 		else{
 			iss.push_back(new da::SS);
 			++i;
+		}
+	}
+	is_tool::i = iss.size();
+	for(i=0;i<is_tool::i;++i){
+		if(iss[i]==nullptr){
+			iss[i] = new da::SS;
 		}
 	}
 }
@@ -168,11 +177,9 @@ bool iss_tool::array_to(da::ISS &iss, std::string &array){
 	is_tool::it = is_use.begin();
 	is_tool::it_end = is_use.end();
 	for(i=0;is_tool::it!=is_tool::it_end;++is_tool::it,++i){
-		std::cout << "ar: " << *is_tool::it << std::endl;
 		if(ss_tool::json_to(*iss[i],*is_tool::it)==false){
 			return false;
 		}
-		std::cout << "ar: " << __LINE__ << std::endl;
 	}
 	return true;
 }

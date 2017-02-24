@@ -59,8 +59,11 @@ void da_type::clear_3d(T &target){
 	typename T::iterator it_end;
 	it_end = target.end();
 	for(typename T::iterator it = target.begin();it!=it_end;++it){
-		(*it)->clear();
-		delete *it;
+		if(*it!=nullptr){
+			(*it)->clear();
+			delete *it;
+			*it = nullptr;
+		}
 	}
 	target.clear();
 }
@@ -79,9 +82,11 @@ void da_type::clear_3d(T &target,std::size_t start, std::size_t end){
 	it = target.begin()+start;
 	it_end = target.begin()+end+1;
 	for(;it!=it_end;++it){
-		(*it)->clear();
-		delete *it;
-		*it = nullptr;
+		if((*it)!=nullptr){
+			(*it)->clear();
+			delete *it;
+			*it = nullptr;
+		}
 		target.erase(it);
 	}
 }
@@ -95,9 +100,11 @@ void da_type::clear_3d(T &target,std::size_t start){
 	std::size_t i;
 	i = target.size()-1;
 	for(;i>=start;--i){
-		target[i]->clear();
-		delete target[i];
-		target[i] = nullptr;
+		if(target[i]!=nullptr){
+			target[i]->clear();
+			delete target[i];
+			target[i] = nullptr;
+		}
 		target.pop_back();
 	}
 }
@@ -139,6 +146,8 @@ void da_type::concat_3d(T &main,T &sub){
 			continue;
 		}
 		main.push_back(sub[k]);
+		sub[k] = nullptr;
 	}
+	sub.clear();
 }
 #endif
