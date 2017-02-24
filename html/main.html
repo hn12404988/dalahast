@@ -10,11 +10,11 @@
 		<img src="/page/image/close_side.png" onclick="_screen.side()" style="position:relative;top:0px;left:0px;height:100%;">
 	</div>
 	<div id="side" style="background-color:yellow;position:fixed;top:5%;left:0%;height:100%;width:20%;overflow:auto;" hidden>
-		<div class="side_block" onclick="document.getElementById('screen').src='node_info.html';">Node Info</div>
-		<div class="side_block" onclick="document.getElementById('screen').src='sql_access.html';">SQL Access</div>
-		<div class="side_block" onclick="document.getElementById('screen').src='topology.html';">Topology</div>
 		<div class="side_block" onclick="document.getElementById('screen').src='error_log.html';">Error Log</div>
-		<div class="side_block"></div>
+		<div class="side_block" onclick="document.getElementById('screen').src='topology.html';">Topology</div>
+		<div class="side_block">TBD</div>
+		<div class="side_block">TBD</div>
+		<div class="side_block">TBD</div>
 		<input type="image" src="/page/image/scroll_left.png" style="width:20px;height:100%;position:absolute;top:0px;left:0%;">
 		<input type="image" src="/page/image/scroll_right.png" style="width:20px;height:100%;position:absolute;top:0px;right:0%;">
 	</div>
@@ -22,7 +22,7 @@
 	 var _side = new side();
 	</script>
 	<div id="screen_1">
-		<iframe id="screen" src="error_log.html" style="width:100%;height:99%;">
+		<iframe id="screen" src="topology.html" style="width:100%;height:99%;">
 		</iframe>
 	</div>
 	<script>

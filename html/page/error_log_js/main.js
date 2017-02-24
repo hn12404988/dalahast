@@ -1,7 +1,7 @@
 now_up_tag = "";
 
 function init(){
-	ws.send(3,"error_log/request",{"up_tag":"init"},function(obj){
+	ws.send(0,"error_log/request",{"up_tag":"init"},function(obj){
 		if(obj==false){
 			throw new Error("stop");
 		}
@@ -23,9 +23,11 @@ function build_up_tag(name,amount){
 	button.setAttribute("id",name);
 	button.value = name+" ("+amount+")";
 	button.setAttribute("onclick","request(this.id)");
+	/*
 	if(amount=="0"){
 		button.style.display = "none";
 	}
+	*/
 	parent.appendChild(button);
 }
 
@@ -34,7 +36,7 @@ function refresh_up_tag(name,amount){
 }
 
 function request(index){
-	ws.send(3,"error_log/request",{"up_tag":index},function(obj){
+	ws.send(0,"error_log/request",{"up_tag":index},function(obj){
 		if(obj==false){
 			throw new Error("stop");
 		}
@@ -68,9 +70,11 @@ function build_column(obj){
 		th.innerHTML = name[i];
 		tr.appendChild(th);
 	}
+	/*
 	var th = document.createElement("th");
 	th.innerHTML = "Admin";
 	tr.appendChild(th);
+	*/
 	table.appendChild(tr);
 }
 
@@ -84,14 +88,17 @@ function build_row(name,obj){
 		td.name = name[i];
 		tr.appendChild(td);
 	}
+	/*
 	var	td = document.createElement("td");
 	td.name = "admin";
 	td.innerHTML = "Delete";
 	td.setAttribute("onclick","delete_data(this.parentElement)");
 	tr.appendChild(td);
+	*/
 	table.appendChild(tr);
 }
 
+/*
 function delete_data(ele){
 	var children = ele.children,
 		i,
@@ -106,7 +113,7 @@ function delete_data(ele){
 	obj["name"] = getCookie("staff_name");
 	obj["password"] = getCookie("password");
 	obj["id"] = id;
-	ws.send(3,"error_log/delete",obj,function(obj2){
+	ws.send(0,"error_log/delete",obj,function(obj2){
 		if(obj2==false){
 			throw new Error("stop");
 		}
@@ -114,4 +121,4 @@ function delete_data(ele){
 		ele.parentElement.removeChild(ele);
 	});
 }
-
+*/

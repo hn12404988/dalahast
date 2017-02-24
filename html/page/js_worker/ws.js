@@ -19,7 +19,7 @@ function ws(url_array){
 			this.com.push(new WebSocket(url_array[i]));
 			this.com[i].addEventListener("message",function(event){
 				var text = event.data;
-				//console.log("ws: "+text);
+				console.log("ws: "+text);
 				ws.msg--;
 				if(ws.data.length>0){
 					while(ws.msg<ws.max_msg){
@@ -145,7 +145,7 @@ ws.prototype.send = function(server,node,body,callback){
 	else{
 		throw new Error("parameter 3 in ws.send is not object");
 	}
-	send = node+".socket"+send;
+	send = node+send;
 	if(callback){
 		for(var index = 1;index<10;index++){
 			if(this.callback_list[index]==undefined){

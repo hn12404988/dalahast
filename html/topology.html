@@ -46,10 +46,8 @@
 	<style src="/page/topology.css"></style>
 	<script src="/page/topology_js/main.js"></script>
 	<script src="/page/js_worker/ws.js"></script>
-	<script src="/page/js_worker/to_server.js"></script>
 	<script>
-	 var ws = new ws(["0","0","ws://192.168.1.105/ws"]);
-	 var to_server = new to_server();
+	 var ws = new ws(["ws://127.0.0.1:8887"]);
 	</script>
 	<!-- START SIGMA IMPORTS -->
 	<script src="/page/sigma/src/sigma.core.js"></script>

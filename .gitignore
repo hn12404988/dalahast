@@ -11,6 +11,7 @@ org-mode-config.el
 *.socket
 *.db
 *.log
+*.sh
 .DS_Store
 org-clock-save.el
 emacs-config.el

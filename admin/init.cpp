@@ -160,7 +160,7 @@ int main(){
 		std::cout << "Fail on opening database 'info'" << std::endl;
 		return 0;
 	}
-	str = "create table if not exists node (node CHAR(300),'interface' CHAR(10) default 'FILE', 'private' TINYINT default 0, 'anti' TINYINT default 0, 'freeze' TINYINT default 0, 'check' TINYINT default 0)";
+	str = "create table if not exists node (node CHAR(300),'interface' CHAR(10) default 'FILE', 'private' INT default 0, 'anti' INT default 0, 'freeze' INT default 0, 'check' INT default 0)";
 	if(da.db_exec(str)==false){
 		std::cout << "Fail on building table 'node'" << std::endl;
 		return 0;

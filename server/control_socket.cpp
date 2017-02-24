@@ -116,7 +116,7 @@ void on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
 		}
 	}
 	if(i==j){
-		message = "0{\"Error\":\"Fail on getting node\"}0";
+		message = "0{\"Error\":\"Fail on getting node\",\"message\":\""+message+"\"}0";
 		s->send(hdl, message.c_str(), msg->get_opcode());
 		return;
 	}
@@ -132,7 +132,7 @@ void on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
 		}
 	}
 	if(i==location_amount){
-		message = "0{\"Error\":\"Node doesn't exist\"}0";
+		message = "0{\"Error\":\"Node doesn't exist\",\"Node\":\""+node+"\"}0";
 		s->send(hdl, message.c_str(), msg->get_opcode());
 		return;
 	}
@@ -179,7 +179,7 @@ bool init(){
 	if(da.db_open(da.root+"/sqlite/info.db")==false){
 		return false;
 	}
-	str = "select node from node where interface = 'FILE' and 'private' = 0";
+	str = "select node from node WHERE private = 0 AND interface = 'FILE'";
 	if(da.db_is_exec(str)==false){
 		return false;
 	}

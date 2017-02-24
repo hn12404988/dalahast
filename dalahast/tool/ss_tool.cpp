@@ -132,6 +132,7 @@ bool ss_tool::json_to(da::SS &ss,std::string &json){
 		if(json=="" || json=="{}"){
 			return true;
 		}
+		std::cout << "ss: " << __LINE__ << std::endl;
 	}
 	else{
 		if(json=="" || json=="{}"){
@@ -143,6 +144,7 @@ bool ss_tool::json_to(da::SS &ss,std::string &json){
 	}
 	i = 1;
 	while(json[i]!='\0'){
+		std::cout << "ss: " << __LINE__ << std::endl;
 		if(json[i]!='"'){
 			return false;
 		}
@@ -155,44 +157,59 @@ bool ss_tool::json_to(da::SS &ss,std::string &json){
 		str = json.substr(j,i-j-1);
 		++i;
 		j = i;
+		std::cout << "ss: " << __LINE__ << std::endl;
 		if(json[i]=='{'){
+			std::cout << "ss: " << __LINE__ << std::endl;
 			json_to_end(json);
+			std::cout << "ss: " << __LINE__ << std::endl;
 			if(json[i]!='}'){
 				return false;
 			}
 			outcome = json.substr(j,i-j+1);
 		}
 		else if(json[i]=='['){
+			std::cout << "ss: " << __LINE__ << std::endl;
 			array_to_end(json);
+			std::cout << "ss: " << __LINE__ << std::endl;
 			if(json[i]!=']'){
 				return false;
 			}
 			outcome = json.substr(j,i-j+1);
 		}
 		else if(json[i]=='"'){
+			std::cout << "ss: " << __LINE__ << std::endl;
 			++j;
 			++i;
 			for(;json[i]!='\0';++i){
 				if(json[i]=='['){
+					std::cout << "ss: " << __LINE__ << std::endl;
 					array_to_end(json);
+					std::cout << "ss: " << __LINE__ << std::endl;
 					if(json[i]!=']'){
 						return false;
 					}
 					continue;
 				}
 				if(json[i]=='{'){
+					std::cout << "ss: " << __LINE__ << std::endl;
 					json_to_end(json);
+					std::cout << "ss: " << __LINE__ << std::endl;
 					if(json[i]!='}'){
 						return false;
 					}
 					continue;
 				}
 				if(json[i]=='"' && json[i-1]!='\\'){
+					std::cout << "ss: " << __LINE__ << std::endl;
 					break;
 				}
+				std::cout << "ss: " << __LINE__ << std::endl;
 			}
+			std::cout << "ss: " << __LINE__ << std::endl;
 			outcome = json.substr(j,i-j);
+			std::cout << "ss: " << __LINE__ << std::endl;
 			if(json[i+1]=='}'){
+				std::cout << "ss: " << __LINE__ << std::endl;
 				if(fixed!=nullptr){
 					for(j=0;j<ceiling;++j){
 						if((*fixed)[j]==str){
@@ -209,13 +226,16 @@ bool ss_tool::json_to(da::SS &ss,std::string &json){
 						return false;
 					}
 				}
+				std::cout << "ss: " << __LINE__ << std::endl;
 				ss[str] = outcome;
 				return true;
 			}
+			std::cout << "ss: " << __LINE__ << std::endl;
 		}
 		else{
 			return false;
 		}
+		std::cout << "ss: " << __LINE__ << std::endl;
 		if(fixed!=nullptr){
 			for(j=0;j<ceiling;++j){
 				if((*fixed)[j]==str){
@@ -232,8 +252,12 @@ bool ss_tool::json_to(da::SS &ss,std::string &json){
 				return false;
 			}
 		}
+		std::cout << "ss: " << str << std::endl;
+		std::cout << "ss: " << outcome << std::endl;
 		ss[str] = outcome;
+		std::cout << "ss: " << __LINE__ << std::endl;
 		i += 2;
+		std::cout << "ss: " << __LINE__ << std::endl;
 	}
 	if(fixed!=nullptr){
 		for(i=0;i<ceiling;++i){
@@ -245,6 +269,7 @@ bool ss_tool::json_to(da::SS &ss,std::string &json){
 			return false;
 		}
 	}
+	std::cout << "ss: " << __LINE__ << std::endl;
 	return true;
 }
 

@@ -1,11 +1,10 @@
 node_color_list = ["#7FFFD4","#00FFFF","#FFE4C4","#FFD700","#ADFF2F","#FF69B4","#90EE90"];
-data_racing_id = "3_data_racing";
 show_label_size = 8;
 default_size = 4;
 lock = false;
 
 function init(){
-	ws.send(3,"topology/init",{"init":"1"},function(obj){
+	ws.send(0,"topology/init",{"init":"1"},function(obj){
 		if(obj==false){
 			throw new Error ("stop");
 		}
@@ -184,7 +183,7 @@ function init(){
 				return;
 			}
 			//if (event.data.node.center==undefined){
-			ws.send(3,"topology/node_info",{"node_id":event.data.node.id},function(obj){
+			ws.send(0,"topology/node_info",{"node_id":event.data.node.id},function(obj){
 				fill_node_info(obj);
 			});
 			var nodes = s.graph.nodes(),
@@ -475,45 +474,6 @@ function build_edge_index(){
 	parent.appendChild(fireNfreeze);
 	parent.appendChild(fireNcheck);
 }
-/*
-function show_data_racing(checkbox){
-	var	edges = s.graph.edges(),
-		i,j;
-	j = edges.length;
-	if(checkbox==true){
-		for(i=0;i<j;i++){
-			if(edges[i]["target"]==data_racing_id){
-				edges[i]["color"] = edge_color("fire");
-			}
-		}
-		document.getElementById("filter_data_racing").checked = true;
-		return;
-	}
-	if(checkbox==false){
-		for(i=0;i<j;i++){
-			if(edges[i]["target"]==data_racing_id){
-				edges[i]["color"] = edge_color("NULL");
-			}
-		}
-		document.getElementById("filter_data_racing").checked = false;
-		return;
-	}
-	if(checkbox.checked==true){
-		for(i=0;i<j;i++){
-			if(edges[i]["target"]==data_racing_id){
-				edges[i]["color"] = edge_color("fire");
-			}
-		}
-	}
-	else{
-		for(i=0;i<j;i++){
-			if(edges[i]["target"]==data_racing_id){
-				edges[i]["color"] = edge_color("NULL");
-			}
-		}
-	}
-}
-*/
 
 function dragable(checkbox){
 	if(checkbox==true){

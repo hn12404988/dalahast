@@ -220,7 +220,8 @@ int main (int argc, char* argv[]){
 				str = list[i]+".o log";
 				system(str.c_str());
 			}
-			str = list[i]+".o &";
+			str = "valgrind --leak-check=yes --log-file=vglog "+list[i]+".o &";
+			//str = list[i]+".o &";
 			system(str.c_str());
 		}
 		else if(execute==da::stop){
@@ -236,7 +237,8 @@ int main (int argc, char* argv[]){
 				str = list[i]+".o log";
 				system(str.c_str());
 			}
-			str = list[i]+".o";
+			str = "valgrind --leak-check=yes --log-file=vglog "+list[i]+".o &";
+			//str = list[i]+".o &";
 			system(str.c_str());
 		}
 		else if(execute==da::compile){

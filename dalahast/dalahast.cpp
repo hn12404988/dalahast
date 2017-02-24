@@ -110,7 +110,11 @@ bool dalahast::db_exec(std::string query){
 		return false;
 	}
 	char *zErrMsg = 0;
-	if(sqlite3_exec(db, query.c_str(), nullptr, 0, &zErrMsg)!=SQLITE_OK){
+	int flag {SQLITE_BUSY};
+	while(flag==SQLITE_BUSY){
+		flag = sqlite3_exec(db, query.c_str(), nullptr, 0, &zErrMsg);
+	}
+	if(flag!=SQLITE_OK){
 		ss_tool::str = "sqlite3_exec fail in db_exec: ";
 		ss_tool::str.append(zErrMsg);
 		error(ss_tool::str,query);
@@ -129,8 +133,12 @@ bool dalahast::db_iss_exec(std::string query,bool concat){
 		error("db==nullptr in db_res_exec");
 		return false;
 	}
+	int flag {SQLITE_BUSY};
 	char *zErrMsg = 0;
-	if(sqlite3_exec(db, query.c_str(), callback_iss, &iss, &zErrMsg)!=SQLITE_OK){
+	while(flag==SQLITE_BUSY){
+		flag = sqlite3_exec(db, query.c_str(), callback_iss, &iss, &zErrMsg);
+	}
+	if(flag!=SQLITE_OK){
 		ss_tool::str = "sqlite3_exec fail in db_res_exec: ";
 		ss_tool::str.append(zErrMsg);
 		error(ss_tool::str,query);
@@ -149,8 +157,12 @@ bool dalahast::db_is_exec(std::string query,bool concat){
 		error("db==nullptr in db_res_exec");
 		return false;
 	}
+	int flag {SQLITE_BUSY};
 	char *zErrMsg = 0;
-	if(sqlite3_exec(db, query.c_str(), callback_is, &is, &zErrMsg)!=SQLITE_OK){
+	while(flag==SQLITE_BUSY){
+		flag = sqlite3_exec(db, query.c_str(), callback_is, &is, &zErrMsg);
+	}
+	if(flag!=SQLITE_OK){
 		ss_tool::str = "sqlite3_exec fail in db_res_exec: ";
 		ss_tool::str.append(zErrMsg);
 		error(ss_tool::str,query);

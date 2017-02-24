@@ -168,9 +168,11 @@ bool iss_tool::array_to(da::ISS &iss, std::string &array){
 	is_tool::it = is_use.begin();
 	is_tool::it_end = is_use.end();
 	for(i=0;is_tool::it!=is_tool::it_end;++is_tool::it,++i){
+		std::cout << "ar: " << *is_tool::it << std::endl;
 		if(ss_tool::json_to(*iss[i],*is_tool::it)==false){
 			return false;
 		}
+		std::cout << "ar: " << __LINE__ << std::endl;
 	}
 	return true;
 }

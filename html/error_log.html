@@ -4,10 +4,9 @@
 	<link rel="stylesheet" href="/page/error_log.css">
 	<script src="/page/error_log_js/main.js"></script>
 	<script src="/page/js_worker/ws.js"></script>
-	<script src="/page/js_worker/to_server.js"></script>
 	<script>
-	 var ws = new ws(["0","0","ws://192.168.1.105/ws"]);
-	 var to_server = new to_server();
+	 var ws = new ws(["ws://127.0.0.1:8887"]);
+	 /*
 	 function setCookie(cname, cvalue, exdays) {
 		 var d = new Date();
 		 d.setTime(d.getTime() + (exdays*24*60*60*1000));
@@ -24,6 +23,7 @@
 		 }
 		 return "";
 	 }
+	 */
 	</script>
 </head>
 <body onload="init()">

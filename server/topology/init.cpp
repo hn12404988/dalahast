@@ -12,7 +12,7 @@ da_type dtype;
 
 auto execute = [&](const short int index){
 	client_thread client;
-	client.import_location(&args);
+	client.import_location(&location);
 	client.set_error_node(0,__FILE__);
 	std::string str,info,topology;
 	da::ISS iss,iss2;
@@ -25,8 +25,8 @@ auto execute = [&](const short int index){
 	int i,j;
 	while(server.msg_recv(index)==true){
 		dtype.clear_3d<da::ISS>(iss2);
-		info = "[]";
-		topology = "[]";
+		info = "{\"already\":[]}";
+		topology = "{\"already\":[]}";
 		if(client.fireNstore(to_info,info)>0){
 			server.echo_back_error(server.socketfd[index],"Fail on firing to info");
 			continue;
@@ -80,6 +80,7 @@ auto execute = [&](const short int index){
 			server.echo_back_error(server.socketfd[index],"Fail on parsing iss_info");
 			continue;
 		}
+		std::cout << __LINE__ << std::endl;
 		_iss.to_array(iss2);
 		send["info"] = _iss.outcome;
 		/**
@@ -89,6 +90,7 @@ auto execute = [&](const short int index){
 			server.echo_back_error(server.socketfd[index],"Fail on joining topology");
 			continue;
 		}
+		std::cout << __LINE__ << std::endl;
 		if(topology[0]=='0' || topology==""){
 			server.echo_back_error(server.socketfd[index],"topology return error");
 			continue;
@@ -100,15 +102,20 @@ auto execute = [&](const short int index){
 		/**
 		 * 
 		 **/
+		std::cout << __LINE__ << std::endl;
 		it = ss.begin();
 		it_end = ss.end();
 		dtype.clear_3d<da::ISS>(iss2);
+		std::cout << __LINE__ << std::endl;
 		for(;it!=it_end;++it){
+			std::cout << __LINE__ << std::endl;
 			dtype.clear_3d<da::ISS>(iss);
+			std::cout << it->second << std::endl;
 			str = it->first;
 			if(_iss.array_to(iss,it->second)==false){
 				break;
 			}
+			std::cout << __LINE__ << std::endl;
 			i = iss.size()-1;
 			for(;i>=0;--i){
 				(*iss[i])["from_server"] = str;
@@ -127,20 +134,27 @@ auto execute = [&](const short int index){
 				 * 
 				 **/
 				j = (*iss[i])["to_node"].find("/");
+				std::cout << __LINE__ << std::endl;
 				if(j==std::string::npos){
+					std::cout << __LINE__ << std::endl;
 					(*iss[i])["to_folder"] = "";
 				}
 				else{
+					std::cout << __LINE__ << std::endl;
 					(*iss[i])["to_folder"] = (*iss[i])["to_node"].substr(0,j);
 					(*iss[i])["to_node"] = (*iss[i])["to_node"].substr(j+1);
 				}
 			}
+			std::cout << __LINE__ << std::endl;
 			dtype.concat_3d<da::ISS>(iss2,iss);
+			std::cout << __LINE__ << std::endl;
 		}
+		std::cout << __LINE__ << std::endl;
 		if(it!=it_end){
 			server.echo_back_error(server.socketfd[index],"Fail on parsing iss_topology");
 			continue;
 		}
+		std::cout << __LINE__ << std::endl;
 		_iss.to_array(iss2);
 		send["fire"] = _iss.outcome;
 		_ss->to_json(send);
@@ -184,6 +198,7 @@ int main (int argc, char* argv[]){
 		return 0;
 	}
 	server.execute = execute;
+	init();
 	if(server.init(__FILE__)==true){
 		server.start_accept();
 	}
