@@ -25,7 +25,7 @@ auto execute = [&](const short int index){
 		 **/
 		if(_ss.json_to(ss,server.raw_msg[index])==false){
 			if(da.db_open(da.root+"/sqlite/error_log.db")==true){
-				str = "insert into error_node_recv (message,time) values ('"+server.raw_msg[index]+"',datetime('now'))";
+				str = "insert into error_node_recv (message,time) values (\""+server.raw_msg[index]+"\",datetime('now'))";
 				if(da.db_exec(str)==true){
 					server.echo_back_error(server.socketfd[index],"Fail on parsing args");
 					continue;
@@ -77,10 +77,10 @@ auto execute = [&](const short int index){
 			}
 		}
 		if(ss["type"]=="request"){
-			str = "insert into request (from_node,to_server,to_node,message,reply,time) values ('"+ss["from_node"]+"',"+to_server+",'"+to_node+"','"+ss["message"]+"','"+ss["message2"]+"',datetime('now'))";
+			str = "insert into request (from_node,to_server,to_node,message,reply,time) values (\""+ss["from_node"]+"\","+to_server+",\""+to_node+"\",\""+ss["message"]+"\",\""+ss["message2"]+"\",datetime('now'))";
 		}
 		else if(ss["type"]=="socket"){
-			str = "insert into socket (from_node,to_server,to_node,message,error_flag,time) values ('"+ss["from_node"]+"',"+to_server+",'"+to_node+"','"+ss["message"]+"','"+ss["message2"]+"',datetime('now'))";
+			str = "insert into socket (from_node,to_server,to_node,message,error_flag,time) values (\""+ss["from_node"]+"\","+to_server+",\""+to_node+"\",\""+ss["message"]+"\",\""+ss["message2"]+"\",datetime('now'))";
 		}
 		else{
 			server.echo_back_error(server.socketfd[index],"type invalid");

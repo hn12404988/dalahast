@@ -40,94 +40,34 @@ function init(){
 					}
 				}
 			}
-			if(sub_arr.length==0){
+			subsub_arr = pie_distribution(arr[i+1]["x"],arr[i+1]["y"],2*arr[0],sub_arr.length);
+			for(l=0;l<sub_arr.length;l++){
 				for(y=0;y<obj["info"].length;y++){
-					if(obj["info"][y]["server"]==server[i]){
-						tmp_arr = get_coordinate(arr[i+1]["x"],arr[i+1]["y"],arr[0]);
+					if(obj["info"][y]["server"]==server[i] && obj["info"][y]["folder"]==sub_arr[l]){
+						tmp_arr = get_coordinate(subsub_arr[l+1]["x"],subsub_arr[l+1]["y"],subsub_arr[0]);
+						if(obj["info"][y]["folder"]==""){
+							/**
+							 * 
+							 **/
+						}
 						g.nodes.push({
-							id: server[i]+"_"+obj["info"][y]["node"],
-							label: obj["info"][y]["node"],
+							id: server[i]+"_"+obj["info"][y]["folder"]+"/"+obj["info"][y]["node"],
+							label: obj["info"][y]["folder"]+"/"+obj["info"][y]["node"],
 							x: tmp_arr[0],
 							y: tmp_arr[1],
 							size: default_size,
-							color: node_color_list[server_index],
+							color: node_color_list[server_index]
 						});
-						/*
-						if(obj["info"][y]["private"]=="0"){
-							g.edges.push({
-								id: server[i]+'_/control_'+server[i]+"_/"+obj["info"][y]["node"],
-								source: server[i]+'_/control',
-								target: server[i]+"_/"+obj["info"][y]["node"],
-								size: 2,
-								color: edge_color("fire"),
-								fire_type: "fire",
-								type: ['arrow']
-							});
+						if(obj["info"][y]["private"]=="1"){
+							g.nodes[g.nodes.length-1].borderColor = "#000";
+							g.nodes[g.nodes.length-1].borderWidth = 2;
 						}
-						*/
-					}
-				}
-			}
-			else{
-				subsub_arr = pie_distribution(arr[i+1]["x"],arr[i+1]["y"],2*arr[0],sub_arr.length);
-				for(l=0;l<sub_arr.length;l++){
-					for(y=0;y<obj["info"].length;y++){
-						if(obj["info"][y]["server"]==server[i] && obj["info"][y]["folder"]==sub_arr[l]){
-							tmp_arr = get_coordinate(subsub_arr[l+1]["x"],subsub_arr[l+1]["y"],subsub_arr[0]);
-							g.nodes.push({
-								id: server[i]+"_"+obj["info"][y]["folder"]+"/"+obj["info"][y]["node"],
-								label: obj["info"][y]["folder"]+"/"+obj["info"][y]["node"],
-								x: tmp_arr[0],
-								y: tmp_arr[1],
-								size: default_size,
-								color: node_color_list[server_index]
-							});
-							if(obj["info"][y]["private"]=="1"){
-								g.nodes[g.nodes.length-1].borderColor = "#000";
-								g.nodes[g.nodes.length-1].borderWidth = 2;
-							}
-							if(g.nodes[g.nodes.length-1]["label"][0]=="/"){
-								g.nodes[g.nodes.length-1]["label"] = g.nodes[g.nodes.length-1]["label"].substr(1);
-							}
-							/*
-							if(obj["info"][y]["private"]=="0"){
-								g.edges.push({
-									id: server[i]+'_control_'+server[i]+"_"+obj["info"][y]["folder"]+"/"+obj["info"][y]["node"],
-									source: server[i]+'_control',
-									target: server[i]+"_"+obj["info"][y]["folder"]+"/"+obj["info"][y]["node"],
-									size: 2,
-									color: edge_color("NULL"),
-									fire_type: "fire",
-									type: ['arrow']
-								});
-							}
-							*/
+						if(g.nodes[g.nodes.length-1]["label"][0]=="/"){
+							g.nodes[g.nodes.length-1]["label"] = g.nodes[g.nodes.length-1]["label"].substr(1);
 						}
 					}
 				}
 			}
-			//tmp_arr = near_center(arr[i+1]["x"],arr[i+1]["y"],center_x,center_y,arr[0]);
-			/*
-			g.nodes.push({
-				id: server[i]+"_control",
-				label: "control",
-				x: arr[i+1]["x"],
-				y: arr[i+1]["y"],
-				size: default_size,
-				color: node_color_list[server_index]
-			});
-			*/
-			/*
-			tmp_arr = near_center(arr[i+1]["x"],arr[i+1]["y"],center_x,center_y,arr[0]);
-			g.nodes.push({
-				id: server[i]+"_out",
-				label: "out",
-				x: tmp_arr[0],
-				y: tmp_arr[1],
-				size: default_size,
-				color: node_color_list[server_index]
-			});
-			*/
 		}
 		l = obj["fire"].length;
 		y = obj["info"].length;
@@ -182,58 +122,57 @@ function init(){
 			if(lock==true){
 				return;
 			}
-			//if (event.data.node.center==undefined){
-			ws.send(0,"topology/node_info",{"node_id":event.data.node.id},function(obj){
-				fill_node_info(obj);
-			});
-			var nodes = s.graph.nodes(),
-				edges = s.graph.edges(),
-				nb = db.neighborhood(event.data.node.id),
-				i,j,index,
-				len = nodes.length,
-				len2;
-			for(i=0;i<len;i++){
-				nodes[i]["color"] = "#DCDCDC";
-				nodes[i]["size"] = default_size;
-			}
-			len = edges.length;
-			for(i=0;i<len;i++){
-				edges[i]["color"] = "#DCDCDC";
-			}
-			len = nb["nodes"].length;
-			len2 = nodes.length;
-			for(i=0;i<len;i++){
-				index = nb["nodes"][i]["id"].indexOf("_");
-				index = nb["nodes"][i]["id"].substr(0,index);
-				index = parseInt(index);
-				for(j=0;j<len2;j++){
-					if(nodes[j]["id"]==nb["nodes"][i]["id"]){
-						nodes[j]["color"] = node_color_list[index];
-						nodes[j]["size"] = show_label_size;
-						break;
+			if (event.data.node.center==undefined){
+				ws.send(0,"topology/node_info",{"node_id":event.data.node.id},function(obj){
+					fill_node_info(obj);
+				});
+				var nodes = s.graph.nodes(),
+					edges = s.graph.edges(),
+					nb = db.neighborhood(event.data.node.id),
+					i,j,index,
+					len = nodes.length,
+					len2;
+				for(i=0;i<len;i++){
+					nodes[i]["color"] = "#DCDCDC";
+					nodes[i]["size"] = default_size;
+				}
+				len = edges.length;
+				for(i=0;i<len;i++){
+					edges[i]["color"] = "#DCDCDC";
+				}
+				len = nb["nodes"].length;
+				len2 = nodes.length;
+				for(i=0;i<len;i++){
+					index = nb["nodes"][i]["id"].indexOf("_");
+					index = nb["nodes"][i]["id"].substr(0,index);
+					index = parseInt(index);
+					for(j=0;j<len2;j++){
+						if(nodes[j]["id"]==nb["nodes"][i]["id"]){
+							nodes[j]["color"] = node_color_list[index];
+							nodes[j]["size"] = show_label_size;
+							break;
+						}
 					}
 				}
-			}
-			len = nb["edges"].length;
-			len2 = edges.length;
-			for(i=0;i<len;i++){
-				for(j=0;j<len2;j++){
-					if(nb["edges"][i]["id"]==edges[j]["id"]){
-						edges[j]["color"] = edge_color(edges[j]["fire_type"]);
-						break;
+				len = nb["edges"].length;
+				len2 = edges.length;
+				for(i=0;i<len;i++){
+					for(j=0;j<len2;j++){
+						if(nb["edges"][i]["id"]==edges[j]["id"]){
+							edges[j]["color"] = edge_color(edges[j]["fire_type"]);
+							break;
+						}
 					}
 				}
+				s.refresh();
 			}
-			s.refresh();
-			//}
 		});
-		//show_data_racing(document.getElementById("filter_data_racing"));
 		s.refresh();
 	});
 }
 
 function fill_node_info(obj){
-	var arr = ["node","node_type","interface","input","input_form","anti_data_racing"],
+	var arr = ["node","interface","anti","check","freeze"],
 		i = 0;
 	if(obj==false || obj==true){
 		for(i=0;i<arr.length;i++){
@@ -247,8 +186,24 @@ function fill_node_info(obj){
 }
 
 function pie_distribution(X,Y,L,N){
+	/**
+	 * This is a function for a big circle to contain N small circle.
+	 * X: Coordinate of big circle's center on x axis.
+	 * Y: Coordinate of big circle's center on y axis.
+	 * L: Diameter of big circle.
+	 * N: How many small circle.
+	 * [RETURN]: An array contain N+1 elements. First one is the radius of all small circle. Others are small circles' x and y coordinate. 
+	 **/
 	var arr = [],
 		index,i,j,k,l,tmp,inner_r,inner_l;
+	if(N<=1){
+		arr.push(L/2);
+		arr.push({
+			x: X,
+			y: Y
+		});
+		return arr;
+	}
 	i = Math.sin(Math.PI/N);
 	arr.push(i*L*0.5/(1+i));
 	inner_r = (L*0.5) - arr[0];
@@ -369,6 +324,12 @@ function pie_distribution(X,Y,L,N){
 }
 
 function get_coordinate(X,Y,R){
+	/**
+	 * A function to locate a random position in a circle.
+	 * X: Center of the circle at x axis.
+	 * Y: Center of the circle at y axis.
+	 * R: Radius of the circle.
+	 **/
 	var arr = [],
 		i;
 	X = X - R;
@@ -380,6 +341,14 @@ function get_coordinate(X,Y,R){
 }
 
 function near_center(x,y,X,Y,r){
+	/**
+	 * A function to locate a position in small circle, but near to the center of the center of all small circles around.
+	 * x: Center of the small circle at x axis.
+	 * y: Center of the small circle at y axis.
+	 * X: Center of all small circles around at x axis.
+	 * Y: Center of all small circles around at y axis.
+	 * r: Radius of the small circle.
+	 **/
 	var l,ratio,
 		arr = [];
 	l = (x-X)*(x-X) + (y-Y)*(y-Y);

@@ -33,6 +33,9 @@ auto execute = [&](const short int index){
 		}
 		server_id = param["node_id"].substr(0,i);
 		node = param["node_id"].substr(i+1);
+		if(node[0]=='/'){
+			node  = node.substr(1);
+		}
 		/**
 		 * 
 		 **/
