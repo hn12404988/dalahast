@@ -27,8 +27,8 @@ php -S localhost:8889
 ```
 g++ --std=c++11 -lsqlite3 -o init.o init.cpp && g++ --std=c++11 -lsqlite3 -o nodes.o nodes.cpp && g++ --std=c++11 -lsqlite3 -o ip_and_port.o ip_and_port.cpp
 ```
-* Running `./init.o`, and follow the instructions. It will ask you whether this server have a `main_port`. `main_port `is the port for dalahast servers communicate with each other.
-* You need a port for web-socket from browser to connect, so running `./ip_and_port.o --add-port`.
+* Running `./init.o`, and follow the instructions. It will ask you whether this server have a `main_port`, which is the port for dalahast servers communicate with each other.
+* You need a port for web-socket from browser to connect, so running `./ip_and_port.o --add-port`. It will ask you the name of the port, and the name should be `web_port`.
 * Running `./nodes.o --compile` to compile all the `.cpp` file.
 
 ## Test Run for Installation
