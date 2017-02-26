@@ -22,7 +22,8 @@ function init(){
 			sub_arr = [],
 			subsub_arr = [],
 			tmp_arr = [],
-			server_index;
+			server_index,
+			empty_folder = false;
 		for(i=0;i<obj["info"].length;i++){
 			if(server.indexOf(obj["info"][i]["server"])==-1){
 				server.push(obj["info"][i]["server"]);
@@ -30,26 +31,49 @@ function init(){
 		}
 		arr = pie_distribution(center_x,center_y,width,server.length);
 		for(i=0;i<server.length;i++){
+			empty_folder = false;
 			build_server_index(parseInt(server[i]));
 			sub_arr = [];
 			server_index = parseInt(server[i]);
 			for(y=0;y<obj["info"].length;y++){
 				if(obj["info"][y]["server"]==server[i]){
 					if(sub_arr.indexOf(obj["info"][y]["folder"])==-1){
-						sub_arr.push(obj["info"][y]["folder"]);
+						if(obj["info"][y]["folder"]==""){
+							empty_folder = true;
+						}
+						else{
+							sub_arr.push(obj["info"][y]["folder"]);
+						}
 					}
 				}
 			}
-			subsub_arr = pie_distribution(arr[i+1]["x"],arr[i+1]["y"],2*arr[0],sub_arr.length);
-			for(l=0;l<sub_arr.length;l++){
+			subsub_arr = pie_distribution(arr[i+1]["x"],arr[i+1]["y"],2*arr[0],sub_arr.length);	
+			for(l=0;l<subsub_arr.length;l++){
 				for(y=0;y<obj["info"].length;y++){
 					if(obj["info"][y]["server"]==server[i] && obj["info"][y]["folder"]==sub_arr[l]){
 						tmp_arr = get_coordinate(subsub_arr[l+1]["x"],subsub_arr[l+1]["y"],subsub_arr[0]);
-						if(obj["info"][y]["folder"]==""){
-							/**
-							 * 
-							 **/
+						g.nodes.push({
+							id: server[i]+"_"+obj["info"][y]["folder"]+"/"+obj["info"][y]["node"],
+							label: obj["info"][y]["folder"]+"/"+obj["info"][y]["node"],
+							x: tmp_arr[0],
+							y: tmp_arr[1],
+							size: default_size,
+							color: node_color_list[server_index]
+						});
+						if(obj["info"][y]["private"]=="1"){
+							g.nodes[g.nodes.length-1].borderColor = "#000";
+							g.nodes[g.nodes.length-1].borderWidth = 2;
 						}
+						if(g.nodes[g.nodes.length-1]["label"][0]=="/"){
+							g.nodes[g.nodes.length-1]["label"] = g.nodes[g.nodes.length-1]["label"].substr(1);
+						}
+					}
+				}
+			}
+			if(empty_folder==true){
+				for(y=0;y<obj["info"].length;y++){
+					if(obj["info"][y]["server"]==server[i] && obj["info"][y]["folder"]==""){
+						tmp_arr = get_coordinate(arr[i+1]["x"],arr[i+1]["y"],arr[0]/10);
 						g.nodes.push({
 							id: server[i]+"_"+obj["info"][y]["folder"]+"/"+obj["info"][y]["node"],
 							label: obj["info"][y]["folder"]+"/"+obj["info"][y]["node"],
