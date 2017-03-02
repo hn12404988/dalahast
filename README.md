@@ -2,6 +2,14 @@
 
 An framework in early stage for [hast](https://github.com/hn12404988/hast), with simple UI based on web.
 
+## Introduction Video
+
+* Abstraction Layer
+  - [English](https://www.youtube.com/watch?v=kjUw3OXX_gw)
+  - [中文](https://www.youtube.com/watch?v=RftqUrRNDNw)
+* API Layer (WIP)
+* Code Layer (WIP)
+
 ## Before start using this project
 
 Dalahast is mainly designed for understanding how to use [hast](https://github.com/hn12404988/hast) right now, so I do not recommend to use this project in serious project, not to mention production environment. It doesn't mean that dalahast is completed. I'm still trying to make it as a robust framework. 
