@@ -4,7 +4,7 @@
 #include <dalahast/tool/ss_tool.h>
 
 unix_server server;
-da::IS args {"node_id"}; // `server_index` + '_' + `node_name`
+da::IS args {"node_id"}; // 'server_index' + '_' + 'node_name'
 da::IS location;
 da::IS server_index;
 std::string my_server_id;

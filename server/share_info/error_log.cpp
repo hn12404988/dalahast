@@ -2,12 +2,15 @@
 #include <hast/client_core.h>
 #include <dalahast/dalahast.h>
 #include <dalahast/tool/iss_tool.h>
+#include <dalahast/tool/ii_tool.h>
 
 unix_server server;
-da::IS args {"already"}; //It's a string in array form. Start from '[]'
+da::IS args {"up_tag","already"}; //already is a string in array form. Start from '[]'
 da::IS location;
+da::IS table {"dalahast","error","error_node_recv","request","socket"};
 std::string my_server_id;
-std::string database_location;
+std::string database_location,up_string;
+short int max {0};
 
 auto execute = [&](const short int index){
 	dalahast da(__FILE__);
@@ -18,11 +21,17 @@ auto execute = [&](const short int index){
 	da::SS::iterator it;
 	da::SS::iterator it_end;
 	da::IS already;
+	da::II amount;
 	iss_tool _iss;
+	ii_tool<da::II> _ii;
 	ss_tool *_ss {&_iss};
 	is_tool *_is {&_iss};
 	std::string str;
 	short int i,j;
+	i = table.size()-1;
+	for(;i>=0;--i){
+		amount.push_back(0);
+	}
 	while(server.msg_recv(index)==true){
 		/**
 		 * 
@@ -39,9 +48,28 @@ auto execute = [&](const short int index){
 		}
 		send.clear();
 		if(da.db_open(database_location)==false){
-			server.echo_back_error(server.socketfd[index],"Fail on opening topology database");
+			server.echo_back_error(server.socketfd[index],"Fail on opening info database");
 			continue;
 		}
+		/**
+		 * 
+		 **/
+		if(param["up_tag"]=="init"){
+			j = 0;
+		}
+		else{
+			for(i=0;i<max;++i){
+				if(param["up_tag"]==table[i]){
+					j = i;
+					break;
+				}
+			}
+			if(i==max){
+				server.echo_back_error(server.socketfd[index],"'up_tag' doesn't exist");
+				continue;
+			}
+		}
+		send["up_tag"] = up_string;
 		/**
 		 * 
 		 **/
@@ -52,15 +80,34 @@ auto execute = [&](const short int index){
 			}
 		}
 		if(i==-1){
-			str = "select * from topology";
-			if(da.db_iss_exec(str)==false){
-				server.echo_back_error(server.socketfd[index],"Fail on getting topology info");
+			for(i=0;i<max;++i){
+				if(i==j){
+					str = "select * from "+table[i];
+					if(da.db_iss_exec(str)==false){
+						break;
+					}
+					amount[i] = da.iss.size();
+					_iss.all_quote = true;
+					_iss.escape_quote = true;
+					_iss.to_array(da.iss);
+					_iss.all_quote = false;
+					_iss.escape_quote = false;
+					send[my_server_id] = _iss.outcome;
+				}
+				else{
+					str = "select count(*) from "+table[i];
+					if(da.db_is_exec(str)==false){
+						break;
+					}
+					amount[i] = std::stoi(da.is[0]);
+				}
+			}
+			if(i<max){
+				server.echo_back_error(server.socketfd[index],"Fail on getting data from SQLite");
 				continue;
 			}
-			if(da.iss.size()>0){
-				_iss.to_array(da.iss);
-				send[my_server_id] = _iss.outcome;
-			}
+			_ii.to_array(amount);
+			send[my_server_id+"_amount"] = _ii.outcome;
 			already.push_back(my_server_id);
 		}
 		/**
@@ -69,7 +116,7 @@ auto execute = [&](const short int index){
 		i = location.size()-1;
 		for(;i>0;--i){
 			_is->to_array(already);
-			str = "share_info/topology_info{\"already\":"+_is->outcome+"}";
+			str = "share_info/node_info{\"up_tag\":\""+param["up_tag"]+"\",\"already\":"+_is->outcome+"}";
 			if(client.fire(i,str)>0){
 				break;
 			}
@@ -91,6 +138,7 @@ auto execute = [&](const short int index){
 				if(j==-1){
 					already.push_back(it->first);
 					send[it->first] = it->second;
+					send[it->first+"_amount"] = tmp[it->first+"_amount"];
 				}
 			}
 		}
@@ -155,8 +203,13 @@ void log(){
 
 bool init(){
 	dalahast da(__FILE__);
+	is_tool _is;
 	short int i;
-	database_location = da.root+"/sqlite/topology.db";
+	_is.set_array_separate('"');
+	_is.to_array(table);
+	up_string = _is.outcome;
+	max = table.size();
+	database_location = da.root+"/sqlite/error_log.db";
 	i  = da.my_server_id();
 	if(i==-1){
 		return false;

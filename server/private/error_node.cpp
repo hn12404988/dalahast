@@ -14,27 +14,42 @@ std::string my_server_id;
 
 auto execute = [&](const short int index){
 	dalahast da(__FILE__);
+	sqlite3 *db {nullptr};
+	sqlite3_stmt *stmt {nullptr};
 	ss_tool _ss;
 	std::string str,to_server,to_node;
 	_ss.import_fixed(&args);
 	da::SS ss;
 	short int i;
+	int flag;
 	while(server.msg_recv(index)==true){
+		if(stmt!=nullptr){
+			sqlite3_finalize(stmt);
+			stmt = nullptr;
+		}
 		/**
 		 * Parsing args
 		 **/
 		if(_ss.json_to(ss,server.raw_msg[index])==false){
 			if(da.db_open(da.root+"/sqlite/error_log.db")==true){
-				str = "insert into error_node_recv (message,time) values (\""+server.raw_msg[index]+"\",datetime('now'))";
-				if(da.db_exec(str)==true){
-					server.echo_back_error(server.socketfd[index],"Fail on parsing args");
-					continue;
+				db = da.get_db();
+				str = "insert into error_node_recv (message,time) values (?,datetime('now'))";
+				flag = sqlite3_prepare(db,str.c_str(),str.length(),&stmt,nullptr);
+				if(flag==SQLITE_OK){
+					sqlite3_bind_text(stmt,1,server.raw_msg[index].c_str(),server.raw_msg[index].length(),nullptr);
+					flag = sqlite3_step(stmt);
+					if(flag==SQLITE_DONE){
+						server.echo_back_error(server.socketfd[index],"Fail on parsing args");
+						continue;
+					}
+					std::cout << "Fail on inserting error_recv" << std::endl;
 				}
+				std::cout << "Fail on preparing to error_recv" << std::endl;
 			}
 			std::cout << "Fail on opening error_log database, so here are the messages" << std::endl;
 			std::cout << "Fail on parsing args" << std::endl;
 			std::cout << server.raw_msg[index] << std::endl;
-			server.echo_back_error(server.socketfd[index],"Fail on parsing args");
+			server.echo_back_error(server.socketfd[index],"Fail on parsing args and open database");
 			continue;
 		}
 		/**
@@ -77,26 +92,40 @@ auto execute = [&](const short int index){
 			}
 		}
 		if(ss["type"]=="request"){
-			str = "insert into request (from_node,to_server,to_node,message,reply,time) values (\""+ss["from_node"]+"\","+to_server+",\""+to_node+"\",\""+ss["message"]+"\",\""+ss["message2"]+"\",datetime('now'))";
+			str = "insert into request (from_node,to_server,to_node,message,reply,time) values (?,?,?,?,?,datetime('now'))";
 		}
 		else if(ss["type"]=="socket"){
-			str = "insert into socket (from_node,to_server,to_node,message,error_flag,time) values (\""+ss["from_node"]+"\","+to_server+",\""+to_node+"\",\""+ss["message"]+"\",\""+ss["message2"]+"\",datetime('now'))";
+			str = "insert into socket (from_node,to_server,to_node,message,error_flag,time) values (?,?,?,?,?,datetime('now'))";
 		}
 		else{
 			server.echo_back_error(server.socketfd[index],"type invalid");
 			continue;
 		}
 		if(da.db_open(da.root+"/sqlite/error_log.db")==true){
-			if(da.db_exec(str)==true){
-				server.echo_back_msg(server.socketfd[index],"1");
+			db = da.get_db();
+			flag = sqlite3_prepare(db,str.c_str(),str.length(),&stmt,nullptr);
+			if(flag==SQLITE_OK){
+				sqlite3_bind_text(stmt,1,ss["from_node"].c_str(),ss["from_node"].length(),nullptr);
+				sqlite3_bind_text(stmt,2,to_server.c_str(),to_server.length(),nullptr);
+				sqlite3_bind_text(stmt,3,to_node.c_str(),to_node.length(),nullptr);
+				sqlite3_bind_text(stmt,4,ss["message"].c_str(),ss["message"].length(),nullptr);
+				sqlite3_bind_text(stmt,5,ss["message2"].c_str(),ss["message2"].length(),nullptr);
+				flag = sqlite3_step(stmt);
+				if(flag==SQLITE_DONE){
+					server.echo_back_msg(server.socketfd[index],"1");
+					continue;
+				}
+				server.echo_back_error(server.socketfd[index],"Fail on inserting error_log");
 			}
-			else{
-				server.echo_back_error(server.socketfd[index],"Fail on inserting");	
-			}
+			server.echo_back_error(server.socketfd[index],"Fail on preparing error_log");
 		}
 		else{
 			server.echo_back_error(server.socketfd[index],"Fail on open error_log database");
 		}
+	}
+	if(stmt!=nullptr){
+		sqlite3_finalize(stmt);
+		stmt = nullptr;
 	}
 	server.done(index);
 	return;

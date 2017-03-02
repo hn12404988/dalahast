@@ -35,6 +35,14 @@ dalahast::dalahast(const char* node_name){
 	}
 }
 
+sqlite3* dalahast::get_db(){
+	return db;
+}
+
+sqlite3_stmt* dalahast::get_stmt(){
+	return ppStmt;
+}
+
 void dalahast::get_root(){
 	short int i;
 	i = 100;
@@ -80,12 +88,37 @@ void dalahast::error(std::string error_msg,std::string msg2){
 	}
 	else{
 		now_is_error_log = true;
-		error_msg = "insert into dalahast (node,message,message2,time) values (\""+node+"\",\""+error_msg+"\",\""+msg2+"\",datetime('now'))";
-		if(db_open(root+"/sqlite/error_log.db")==true){
-			if(db_exec(error_msg)==true){
-				now_is_error_log = false;
-			}
+		if(db_open(root+"/sqlite/error_log.db")==false){
+			return;
 		}
+		int flag;
+		if(ppStmt!=nullptr){
+			sqlite3_finalize(ppStmt);
+			ppStmt = nullptr;
+		}
+		ss_tool::str = "insert into dalahast (node,message,message2,time) values (?,?,?,datetime('now'))";
+		flag = sqlite3_prepare(db,ss_tool::str.c_str(),ss_tool::str.length(),&ppStmt,nullptr);
+		if(flag!=SQLITE_OK){
+			std::cout << "/******** Fail on preparing, so here are the error message ********************/" << std::endl;
+			std::cout << "Node: " << node << std::endl;
+			std::cout << "Error_Message: " << error_msg << std::endl;
+			std::cout << "Message: " << msg2 << std::endl;
+			now_is_error_log = false;
+			return;
+		}
+		sqlite3_bind_text(ppStmt,1,node.c_str(),node.length(),nullptr);
+		sqlite3_bind_text(ppStmt,2,error_msg.c_str(),error_msg.length(),nullptr);
+		sqlite3_bind_text(ppStmt,3,msg2.c_str(),msg2.length(),nullptr);
+		flag = sqlite3_step(ppStmt);
+		sqlite3_finalize(ppStmt);
+		ppStmt = nullptr;
+		if(flag!=SQLITE_DONE){
+			std::cout << "/******** Fail on step, so here are the error message ********************/" << std::endl;
+			std::cout << "Node: " << node << std::endl;
+			std::cout << "Error_Message: " << error_msg << std::endl;
+			std::cout << "Message: " << msg2 << std::endl;
+		}
+		now_is_error_log = false;
 	}
 }
 
@@ -482,13 +515,26 @@ bool dalahast::error_log(std::string msg){
 	if(db_open(root+"/sqlite/error_log.db")==false){
 		return false;
 	}
-	ss_tool::str = "insert into error (server,node,message,time) values ("+server_index+",'"+node+"','"+msg+"',datetime('now'))";
-	if(db_exec(ss_tool::str)==false){
+	if(ppStmt!=nullptr){
+		sqlite3_finalize(ppStmt);
+		ppStmt = nullptr;
+	}
+	int flag;
+	ss_tool::str = "insert into error (server,node,message,time) values (?,?,?,datetime('now'))";
+	flag = sqlite3_prepare(db,ss_tool::str.c_str(),ss_tool::str.length(),&ppStmt,nullptr);
+	if(flag!=SQLITE_OK){
 		return false;
 	}
-	else{
-		return true;
+	sqlite3_bind_text(ppStmt,1,server_index.c_str(),server_index.length(),nullptr);
+	sqlite3_bind_text(ppStmt,2,node.c_str(),node.length(),nullptr);
+	sqlite3_bind_text(ppStmt,3,msg.c_str(),msg.length(),nullptr);
+	flag = sqlite3_step(ppStmt);
+	sqlite3_finalize(ppStmt);
+	ppStmt = nullptr;
+	if(flag!=SQLITE_DONE){
+		return false;
 	}
+	return true;
 }
 
 bool dalahast::all_main_port(){

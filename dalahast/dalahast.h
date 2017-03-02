@@ -36,6 +36,7 @@ static int callback_is(void *ptr, int argc, char **argv, char **azColName){
 class dalahast : public da_type, public iss_tool{
 private:
 	sqlite3 *db {nullptr};
+	sqlite3_stmt *ppStmt {nullptr};
 	std::string node;
 	void error(std::string error_msg,std::string error_msg2 = "");
 	void get_root();
@@ -48,6 +49,8 @@ public:
 	dalahast(const char* node_name);
 	dalahast();
 	~dalahast();
+	sqlite3* get_db();
+	sqlite3_stmt* get_stmt();
 	bool db_exec(std::string query);
 	bool db_iss_exec(std::string query,bool concat = false);
 	bool db_is_exec(std::string query,bool concat = false);

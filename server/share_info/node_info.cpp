@@ -4,7 +4,7 @@
 #include <dalahast/tool/iss_tool.h>
 
 unix_server server;
-da::IS args {"already"}; //It's a string a array form. Start from '[]'
+da::IS args {"already"}; //It's a string in array form. Start from '[]'
 da::IS location;
 std::string my_server_id;
 std::string database_location;
@@ -126,7 +126,7 @@ bool build_location(dalahast &da, da::IsH *fire = nullptr){
 		}
 		location.push_back((*da.iss[i])["ip"]+":"+(*da.iss[i])["port"]);
 		if(fire!=nullptr){
-			fire->push_back(da::fireNstore);
+			fire->push_back(da::fire);
 		}
 	}
 	i = location.size();
