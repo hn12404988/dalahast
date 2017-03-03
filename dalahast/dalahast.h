@@ -43,14 +43,12 @@ private:
 	bool now_is_error_log {false};
 public:
 	std::string root;
-	std::string server_index;
 	da::ISS iss;
 	da::IS is;
 	dalahast(const char* node_name);
 	dalahast();
 	~dalahast();
 	sqlite3* get_db();
-	sqlite3_stmt* get_stmt();
 	bool db_exec(std::string query);
 	bool db_iss_exec(std::string query,bool concat = false);
 	bool db_is_exec(std::string query,bool concat = false);

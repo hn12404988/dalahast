@@ -39,10 +39,6 @@ sqlite3* dalahast::get_db(){
 	return db;
 }
 
-sqlite3_stmt* dalahast::get_stmt(){
-	return ppStmt;
-}
-
 void dalahast::get_root(){
 	short int i;
 	i = 100;
@@ -520,14 +516,13 @@ bool dalahast::error_log(std::string msg){
 		ppStmt = nullptr;
 	}
 	int flag;
-	ss_tool::str = "insert into error (server,node,message,time) values (?,?,?,datetime('now'))";
+	ss_tool::str = "insert into error (node,message,time) values (?,?,datetime('now'))";
 	flag = sqlite3_prepare(db,ss_tool::str.c_str(),ss_tool::str.length(),&ppStmt,nullptr);
 	if(flag!=SQLITE_OK){
 		return false;
 	}
-	sqlite3_bind_text(ppStmt,1,server_index.c_str(),server_index.length(),nullptr);
-	sqlite3_bind_text(ppStmt,2,node.c_str(),node.length(),nullptr);
-	sqlite3_bind_text(ppStmt,3,msg.c_str(),msg.length(),nullptr);
+	sqlite3_bind_text(ppStmt,1,node.c_str(),node.length(),nullptr);
+	sqlite3_bind_text(ppStmt,2,msg.c_str(),msg.length(),nullptr);
 	flag = sqlite3_step(ppStmt);
 	sqlite3_finalize(ppStmt);
 	ppStmt = nullptr;
