@@ -1,6 +1,5 @@
 auto-save-list
 custom.el
-url/
 .org-id-locations
 \#*
 org-mode-config.el
@@ -9,7 +8,6 @@ org-mode-config.el
 \#*\#
 *.o
 *.socket
-*.db
 *.log
 *.sh
 .DS_Store

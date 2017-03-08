@@ -17,10 +17,10 @@ Dalahast is mainly designed for understanding how to use [hast](https://github.c
 ## Prerequisites
 
 * hast is running well.
-* `sqlite-devel` is required. You can install this via package manager like:
+* `sqlite-devel` and `boost-devel` is required. You can install this via package manager like:
 ```
-yum install sqlite-devel
-apt-get install sqlite-devel
+yum install sqlite-devel boost-devel
+apt-get install sqlite-devel boost-devel
 ```
 * A simple web server locate root at `html` folder. If you have `php` installed in your computer, you can simply run this command under `html` folder:
 ```

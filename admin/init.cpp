@@ -9,22 +9,58 @@ void get(std::string &str){
 
 int main(){
 	dalahast da;
-	std::string str,local_ip,server_index,local_port;
+	std::string str,local_ip,server_index,local_port,web_port;
 	int i;
 	bool tcp {true};
-	bool to_center {true};
+	bool to_center {true}, web {true};
 	/**
 	 * Init
 	 **/
-	std::cout << "Is this server need to set TCP/IP for other servers to connect?(y/n)" << std::endl;
+	std::cout << "Is this server need to set TCP/IP port for other servers to connect?(y/n)" << std::endl;
 	get(str);
 	if(str=="y" || str=="Y"){
+		std::cout << "What is the ip of this server for TCP/IP port?(ex: 192.168.1.11)" << std::endl;
+		get(local_ip);
+		if(local_ip==""){
+			std::cout << "Abort" << std::endl;
+			return 0;
+		}
+		/**
+		 * 
+		 **/
+		std::cout << "What is the port of this server for TCP/IP port?(ex: 8888)" << std::endl;
+		get(local_port);
+		if(local_port==""){
+			std::cout << "Abort" << std::endl;
+			return 0;
+		}
 		tcp = true;
 	}
 	else if(str=="n" || str=="N"){
 		tcp = false;
 		local_port = "-1";
 		local_ip = "127.0.0.1";
+	}
+	else{
+		std::cout << "Abort" << std::endl;
+		return 0;
+	}
+	/**
+	 * 
+	 **/
+	std::cout << "Is this server need to receive websocket call from web front-end?(y/n)" << std::endl;
+	get(str);
+	if(str=="y" || str=="Y"){
+		std::cout << "What is the port of this server for websocket port?(ex: 8889)" << std::endl;
+		get(web_port);
+		if(web_port==""){
+			std::cout << "Abort" << std::endl;
+			return 0;
+		}
+		web = true;
+	}
+	else if(str=="n" || str=="N"){
+		web = false;
 	}
 	else{
 		std::cout << "Abort" << std::endl;
@@ -41,23 +77,6 @@ int main(){
 	}
 	i = std::stoi(server_index);
 	server_index = std::to_string(i);
-	if(tcp==true){
-		std::cout << "What is the ip of this server for TCP/IP socket?(ex: 192.168.1.11)" << std::endl;
-		get(local_ip);
-		if(local_ip==""){
-			std::cout << "Abort" << std::endl;
-			return 0;
-		}
-		/**
-		 * 
-		 **/
-		std::cout << "What is the main port of this server for TCP/IP socket?(ex: 8888)" << std::endl;
-		get(local_port);
-		if(local_port==""){
-			std::cout << "Abort" << std::endl;
-			return 0;
-		}
-	}
 	/**
 	 * Build tables in self.db
 	 * self
@@ -87,6 +106,16 @@ int main(){
 	}
 	if(da.db_exec(str)==false){
 		std::cout << "SQL fail on self table: tcp" << std::endl;
+		return 0;
+	}
+	if(web==true){
+		str = "insert into self (key,value) values ('websocket','1')";
+	}
+	else{
+		str = "insert into self (key,value) values ('websocket','0')";
+	}
+	if(da.db_exec(str)==false){
+		std::cout << "SQL fail on self table: websocket" << std::endl;
 		return 0;
 	}
 	str = "insert into self (key,value) values ('local_ip','"+local_ip+"')";
@@ -212,7 +241,14 @@ int main(){
 	if(tcp==true){
 		str = "insert into 'port' (server_id,port,name) values ("+server_index+","+local_port+",'main_port')";
 		if(da.db_exec(str)==false){
-			std::cout << "SQL fail on table 'port' inserting" << std::endl;
+			std::cout << "SQL fail on table 'tcp_port' inserting" << std::endl;
+			return 0;
+		}
+	}
+	if(web==true){
+		str = "insert into 'port' (server_id,port,name) values ("+server_index+","+web_port+",'web_port')";
+		if(da.db_exec(str)==false){
+			std::cout << "SQL fail on table 'web_port' inserting" << std::endl;
 			return 0;
 		}
 	}
