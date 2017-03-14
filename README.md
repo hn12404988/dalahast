@@ -22,7 +22,8 @@ Dalahast is mainly designed for understanding how to use [hast](https://github.c
 ## Prerequisites
 
 * hast is running well.
-* `sqlite-devel` and `boost-devel` is required. You can install this via package manager like:
+* [hast_web](https://github.com/hn12404988/hast_web) library is in the include path.
+* `sqlite-devel` is required. You can install this via package manager like:
 ```
 yum install sqlite-devel boost-devel
 apt-get install sqlite-devel boost-devel
@@ -31,7 +32,6 @@ apt-get install sqlite-devel boost-devel
 ```
 python -m SimpleHTTPServer 8888
 ```
-* [websocketpp](https://github.com/zaphoyd/websocketpp) is required. This is a header only C++ library.
 
 ## Installing
 (I'm still learning auto-configure and make, so right now the installation is quite "hand-made")
@@ -44,7 +44,6 @@ python -m SimpleHTTPServer 8888
 ## Acknowledgments
 
 * This project use an excellent js library called [sigma.js](https://github.com/jacomyal/sigma.js) for web rendering.
-* This project use [websocketpp](https://github.com/zaphoyd/websocketpp) to receive web socket from web front-end.
 
 ## Bugs and Issues
 
