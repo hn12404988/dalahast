@@ -1,3 +1,4 @@
+sqlite/*
 auto-save-list
 custom.el
 .org-id-locations
@@ -9,6 +10,7 @@ org-mode-config.el
 *.o
 *.socket
 *.log
+*.db
 *.sh
 .DS_Store
 org-clock-save.el
