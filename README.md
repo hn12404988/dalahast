@@ -23,10 +23,10 @@ Dalahast is mainly designed for understanding how to use [hast](https://github.c
 
 * hast is running well.
 * [hast_web](https://github.com/hn12404988/hast_web) library is in the include path.
-* `sqlite-devel` is required. You can install this via package manager like:
+* `sqlite-devel` and `openssl-devel` is required. You can install this via package manager like:
 ```
-yum install sqlite-devel boost-devel
-apt-get install sqlite-devel boost-devel
+yum install sqlite-devel openssl-devel
+apt-get install sqlite-devel openssl-devel
 ```
 * A simple web server locate root at `html` folder. If you have `python` installed in your computer, you can simply run this command under `html` folder:
 ```

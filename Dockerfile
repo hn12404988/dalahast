@@ -1,7 +1,7 @@
 FROM centos:7
 #MAINTAINER "your_name" <your_mail@mail.com>
 RUN yum update -y && \
-yum install -y git sqlite-devel gcc gcc-c++ && \
+yum install -y git sqlite-devel gcc gcc-c++ openssl-devel && \
 mkdir /tmp/dalahast && \
 git clone https://github.com/hn12404988/dalahast.git /home/dalahast && \
 git clone https://github.com/hn12404988/hast_web.git /tmp/dalahast/hast_web && \
