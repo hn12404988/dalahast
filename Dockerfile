@@ -10,6 +10,7 @@ mv /tmp/dalahast/hast_web/hast_web /usr/include/hast_web && \
 mv /tmp/dalahast/hast/hast /usr/include/hast && \
 mv /home/dalahast/dalahast /usr/include/dalahast && \
 rm -rf /tmp/dalahast && \
+mkdir /home/dalahast/sqlite && \
 g++ --std=c++11 -lsqlite3 -o /home/dalahast/admin/nodes.o /home/dalahast/admin/nodes.cpp && \
 g++ --std=c++11 -lsqlite3 -o /home/dalahast/admin/ip_and_port.o /home/dalahast/admin/ip_and_port.cpp && \
 g++ --std=c++11 -lsqlite3 -o /home/dalahast/admin/init.o /home/dalahast/admin/init.cpp
