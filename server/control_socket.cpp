@@ -17,7 +17,7 @@ auto execute = [&](const short int index){
 	char callback_index;
 	std::string message,node;
 	while(server.msg_recv(index)==true){
-		message = server.extract_from_raw(index);
+		message = server.raw_msg[index];
 		callback_index = message.back();
 		if(callback_index=='\0'){
 			message = "0{\"Error\":\"No content\"}0";
