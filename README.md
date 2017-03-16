@@ -26,7 +26,7 @@ Dalahast is mainly designed for understanding how to use [hast](https://github.c
 * `sqlite-devel` and `openssl-devel` is required. You can install this via package manager like:
 ```
 yum install sqlite-devel openssl-devel
-apt-get install sqlite-devel openssl-devel
+apt-get install libsqlite3-dev libssl-dev
 ```
 * A simple web server locate root at `html` folder. If you have `python` installed in your computer, you can simply run this command under `html` folder:
 ```
