@@ -77,7 +77,7 @@ void grab_all(da::IS &list){
 void compile(std::string name){
 	std::string str;
 	if(name==root+"control_socket"){
-		str = "g++ --std=c++11 -lsqlite3 -pthread -lcrypto -o "+name+".o "+name+".cpp";
+		str = "g++ --std=c++11 -lsqlite3 -pthread -lcrypto -lssl -o "+name+".o "+name+".cpp";
 	}
 	else{
 		str = "g++ --std=c++11 -lsqlite3 -pthread -o "+name+".o "+name+".cpp";

@@ -1,8 +1,8 @@
-#include <hast_web/ws_server.h>
+#include <hast_web/wss_server.h>
 #include <hast/client_core.h>
 #include <dalahast/dalahast.h>
 
-ws_server server;
+wss_server server;
 std::string port;
 const size_t amount {10};
 da::IS location;
@@ -21,7 +21,7 @@ auto execute = [&](const short int index){
 		callback_index = message.back();
 		if(callback_index=='\0'){
 			message = "0{\"Error\":\"No content\"}0";
-			server.echo_back_msg(server.socketfd[index],message);
+			server.echo_back_msg(index,message);
 			continue;
 		}
 		message.pop_back();
@@ -36,7 +36,7 @@ auto execute = [&](const short int index){
 		}
 		if(i==j){
 			message = "0{\"Error\":\"Fail on getting node\",\"message\":\""+message+"\"}0";
-			server.echo_back_msg(server.socketfd[index],message);
+			server.echo_back_msg(index,message);
 			continue;
 		}
 		/**
@@ -52,7 +52,7 @@ auto execute = [&](const short int index){
 		}
 		if(i==location_amount){
 			message = "0{\"Error\":\"Node doesn't exist\",\"Node\":\""+node+"\"}0";
-			server.echo_back_msg(server.socketfd[index],message);
+			server.echo_back_msg(index,message);
 			continue;
 		}
 		/**
@@ -61,14 +61,14 @@ auto execute = [&](const short int index){
 		if(client.fire(i,message)>0){
 			message = "0{\"Error\":\"Fail on firing\"}";
 			message.push_back(callback_index);
-			server.echo_back_msg(server.socketfd[index],message);
+			server.echo_back_msg(index,message);
 		}
 		else{
 			if(message==""){
 				message = "0{\"Error\":\"Empty reply\"}";
 			}
 			message.push_back(callback_index);
-			server.echo_back_msg(server.socketfd[index],message);
+			server.echo_back_msg(index,message);
 		}
 	}
 	server.done(index);
@@ -120,7 +120,7 @@ int main (int argc, char* argv[]){
 		return 0;
 	}
 	server.execute = execute;
-	if(server.init(port,3)==true){
+	if(server.init("/home/pi/tls/nginx.crt","/home/pi/tls/nginx.key",port,3)==true){
 		server.start_accept();
 	}
 	return 0;
