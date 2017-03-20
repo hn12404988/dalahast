@@ -4,7 +4,7 @@ default_size = 4;
 lock = false;
 
 function init(){
-	ws.send(0,"topology/init",{"init":"1"},function(obj){
+	parent.ws.send(0,"topology/init",{"init":"1"},function(obj){
 		if(obj==false){
 			throw new Error ("stop");
 		}
@@ -147,7 +147,7 @@ function init(){
 				return;
 			}
 			if (event.data.node.center==undefined){
-				ws.send(0,"topology/node_info",{"node_id":event.data.node.id},function(obj){
+				parent.ws.send(0,"topology/node_info",{"node_id":event.data.node.id},function(obj){
 					fill_node_info(obj);
 				});
 				var nodes = s.graph.nodes(),

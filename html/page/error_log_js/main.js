@@ -25,7 +25,7 @@ function refresh_up_tag(name,amount){
 }
 
 function request(index){
-	ws.send(0,"error_log/request",{"server":"all","up_tag":index},function(obj){
+	parent.ws.send(0,"error_log/request",{"server":"all","up_tag":index},function(obj){
 		if(obj==false){
 			throw new Error("stop");
 		}
