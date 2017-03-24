@@ -13,7 +13,9 @@ auto execute = [&](const short int index){
 	client_core client;
 	client.import_location(&location);
 	client.set_error_node(0,__FILE__);
-	short int i,j;
+	dalahast da(__FILE__);
+	int i,j;
+	short int location_index;
 	char callback_index;
 	std::string message,node;
 	while(server.msg_recv(index)==true){
@@ -29,6 +31,20 @@ auto execute = [&](const short int index){
 		 * 
 		 **/
 		j = message.length();
+		for(i=0;i<j;++i){
+			if(message[i]<0 || message[i]>128){
+				break;
+			}
+		}
+		if(i<j){
+			da.error_log("message contain invalid characters");
+			message = "0{\"Error\":\"message contain invalid characters\"}0";
+			server.echo_back_msg(index,message);
+			continue;
+		}
+		/**
+		 * 
+		 **/
 		for(i=0;i<j;++i){
 			if(message[i]=='{'){
 				break;
@@ -55,10 +71,11 @@ auto execute = [&](const short int index){
 			server.echo_back_msg(index,message);
 			continue;
 		}
+		location_index = i;
 		/**
 		 * 
 		 **/
-		if(client.fire(i,message)>0){
+		if(client.fire(location_index,message)>0){
 			message = "0{\"Error\":\"Fail on firing\"}";
 			message.push_back(callback_index);
 			server.echo_back_msg(index,message);
