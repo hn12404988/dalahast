@@ -27,7 +27,7 @@ auto execute = [&](const short int index){
 	while(server.msg_recv(index)==true){
 		_ss.import_fixed(&args);
 		if(_ss.json_to(param,server.raw_msg[index])==false){
-			server.echo_back_error(server.socketfd[index],"Fail on parsing args");
+			server.echo_back_error(index,"Fail on parsing args");
 			continue;
 		}
 		_ss.import_fixed(nullptr);
@@ -55,19 +55,19 @@ auto execute = [&](const short int index){
 		str = "{\"up_tag\":\""+param["up_tag"]+"\",\"already\":\""+already+"\"}";
 
 		if(client.fire(to_info,str)>0){
-			server.echo_back_error(server.socketfd[index],"Fail on fire");
+			server.echo_back_error(index,"Fail on fire");
 			continue;
 		}
 		if(str==""){
-			server.echo_back_error(server.socketfd[index],"Empty reply");
+			server.echo_back_error(index,"Empty reply");
 			continue;
 		}
 		else if(str[0]=='0'){
-			server.echo_back_error(server.socketfd[index],"info return error");
+			server.echo_back_error(index,"info return error");
 			continue;
 		}
 		if(_ss.json_to(tmp,str)==false){
-			server.echo_back_error(server.socketfd[index],"Fail on parsing tmp");
+			server.echo_back_error(index,"Fail on parsing tmp");
 			continue;
 		}
 		/**
@@ -107,7 +107,7 @@ auto execute = [&](const short int index){
 				}
 			}
 			if(it!=it_end){
-				server.echo_back_error(server.socketfd[index],"Fail on process data return from info");
+				server.echo_back_error(index,"Fail on process data return from info");
 				continue;
 			}
 			_ss.to_json(tmp);
@@ -122,14 +122,14 @@ auto execute = [&](const short int index){
 				}
 			}
 			if(it==it_end){
-				server.echo_back_error(server.socketfd[index],"Can not get data from client");
+				server.echo_back_error(index,"Can not get data from client");
 				continue;
 			}
 			send["content"] = "{\""+param["server"]+"\":\""+it->second+"\"}";
 			send["amount"] = tmp[param["server"]+"_amount"];
 		}
 		_ss.to_json(send);
-		server.echo_back_msg(server.socketfd[index],_ss.outcome);
+		server.echo_back_msg(index,_ss.outcome);
 	}
 	server.done(index);
 	return;

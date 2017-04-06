@@ -28,7 +28,7 @@ auto execute = [&](const short int index){
 		}
 		if(i==j){
 			message = "Fail on getting node";
-			server.echo_back_error(server.socketfd[index],message);
+			server.echo_back_error(index,message);
 			continue;
 		}
 		/**
@@ -44,7 +44,7 @@ auto execute = [&](const short int index){
 		}
 		if(i==location_amount){
 			message = "Node doesn't exist";
-			server.echo_back_error(server.socketfd[index],message);
+			server.echo_back_error(index,message);
 			continue;
 		}
 		/**
@@ -52,15 +52,15 @@ auto execute = [&](const short int index){
 		 **/
 		if(client.fire(i,message)>0){
 			message = "Fail on firing";
-			server.echo_back_error(server.socketfd[index],message);
+			server.echo_back_error(index,message);
 		}
 		else{
 			if(message==""){
 				message = "Empty reply";
-				server.echo_back_error(server.socketfd[index],message);
+				server.echo_back_error(index,message);
 			}
 			else{
-				server.echo_back_msg(server.socketfd[index],message);
+				server.echo_back_msg(index,message);
 			}
 		}
 	}

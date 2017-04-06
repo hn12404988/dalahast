@@ -28,26 +28,26 @@ auto execute = [&](const short int index){
 		info = "{\"already\":[]}";
 		topology = "{\"already\":[]}";
 		if(client.fireNstore(to_info,info)>0){
-			server.echo_back_error(server.socketfd[index],"Fail on firing to info");
+			server.echo_back_error(index,"Fail on firing to info");
 			continue;
 		}
 		if(client.fireNstore(to_topology,topology)>0){
-			server.echo_back_error(server.socketfd[index],"Fail on firing to topology");
+			server.echo_back_error(index,"Fail on firing to topology");
 			continue;
 		}
 		/**
 		 * 
 		 **/
 		if(client.join(to_info)==false){
-			server.echo_back_error(server.socketfd[index],"Fail on joining info");
+			server.echo_back_error(index,"Fail on joining info");
 			continue;
 		}
 		if(info[0]=='0' || info==""){
-			server.echo_back_error(server.socketfd[index],"info return error");
+			server.echo_back_error(index,"info return error");
 			continue;
 		}
 		if(_ss->json_to(ss,info)==false){
-			server.echo_back_error(server.socketfd[index],"Fail on parsing info");
+			server.echo_back_error(index,"Fail on parsing info");
 			continue;
 		}
 		/**
@@ -77,7 +77,7 @@ auto execute = [&](const short int index){
 			dtype.concat_3d<da::ISS>(iss2,iss);
 		}
 		if(it!=it_end){
-			server.echo_back_error(server.socketfd[index],"Fail on parsing iss_info");
+			server.echo_back_error(index,"Fail on parsing iss_info");
 			continue;
 		}
 		_iss.to_array(iss2);
@@ -86,15 +86,15 @@ auto execute = [&](const short int index){
 		 * 
 		 **/
 		if(client.join(to_topology)==false){
-			server.echo_back_error(server.socketfd[index],"Fail on joining topology");
+			server.echo_back_error(index,"Fail on joining topology");
 			continue;
 		}
 		if(topology[0]=='0' || topology==""){
-			server.echo_back_error(server.socketfd[index],"topology return error");
+			server.echo_back_error(index,"topology return error");
 			continue;
 		}
 		if(_ss->json_to(ss,topology)==false){
-			server.echo_back_error(server.socketfd[index],"Fail on parsing topology");
+			server.echo_back_error(index,"Fail on parsing topology");
 			continue;
 		}
 		/**
@@ -138,13 +138,13 @@ auto execute = [&](const short int index){
 			dtype.concat_3d<da::ISS>(iss2,iss);
 		}
 		if(it!=it_end){
-			server.echo_back_error(server.socketfd[index],"Fail on parsing iss_topology");
+			server.echo_back_error(index,"Fail on parsing iss_topology");
 			continue;
 		}
 		_iss.to_array(iss2);
 		send["fire"] = _iss.outcome;
 		_ss->to_json(send);
-		server.echo_back_msg(server.socketfd[index],_ss->outcome);
+		server.echo_back_msg(index,_ss->outcome);
 	}
 	dtype.clear_3d<da::ISS>(iss);
 	dtype.clear_3d<da::ISS>(iss2);

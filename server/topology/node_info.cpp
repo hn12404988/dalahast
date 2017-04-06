@@ -23,12 +23,12 @@ auto execute = [&](const short int index){
 	short int i;
 	while(server.msg_recv(index)==true){
 		if(_ss.json_to(param,server.raw_msg[index])==false){
-			server.echo_back_error(server.socketfd[index],"Fail on parsing args");
+			server.echo_back_error(index,"Fail on parsing args");
 			continue;
 		}
 		i = param["node_id"].find("_");
 		if(i==std::string::npos){
-			server.echo_back_error(server.socketfd[index],"Fail on parsing node_id");
+			server.echo_back_error(index,"Fail on parsing node_id");
 			continue;
 		}
 		server_id = param["node_id"].substr(0,i);
@@ -41,20 +41,20 @@ auto execute = [&](const short int index){
 		 **/
 		if(server_id==my_server_id){
 			if(da.db_open(database_location)==false){
-				server.echo_back_error(server.socketfd[index],"Fail on opening database");
+				server.echo_back_error(index,"Fail on opening database");
 				continue;
 			}
 			str = "select * from node where node = '"+node+"' limit 1";
 			if(da.db_iss_exec(str)==false){
-				server.echo_back_error(server.socketfd[index],"Fail on getting data");
+				server.echo_back_error(index,"Fail on getting data");
 				continue;
 			}
 			if(da.iss.size()!=1){
-				server.echo_back_error(server.socketfd[index],"Can't find node");
+				server.echo_back_error(index,"Can't find node");
 				continue;
 			}
 			_ss.to_json(*da.iss[0]);
-			server.echo_back_msg(server.socketfd[index],_ss.outcome);
+			server.echo_back_msg(index,_ss.outcome);
 			continue;
 		}
 		else{
@@ -67,14 +67,14 @@ auto execute = [&](const short int index){
 			if(i>=0){
 				str = "topology/node_info"+server.raw_msg[index];
 				if(client.fire(i,str)>0){
-					server.echo_back_error(server.socketfd[index],"Fail on fire");
+					server.echo_back_error(index,"Fail on fire");
 					continue;
 				}
 				if(str==""){
-					server.echo_back_error(server.socketfd[index],"Empty reply");
+					server.echo_back_error(index,"Empty reply");
 				}
 				else{
-					server.echo_back_msg(server.socketfd[index],str);
+					server.echo_back_msg(index,str);
 				}
 				continue;
 			}
@@ -83,29 +83,29 @@ auto execute = [&](const short int index){
 				for(;i>=0;--i){
 					str = "topology/node_info"+server.raw_msg[index];
 					if(client.fire(i,str)>0){
-						server.echo_back_error(server.socketfd[index],"Fail on fire");
+						server.echo_back_error(index,"Fail on fire");
 						break;
 					}
 					if(str=="1"){
 						continue;
 					}
 					if(str[0]=='0' || str==""){
-						server.echo_back_error(server.socketfd[index],"Empty reply");
+						server.echo_back_error(index,"Empty reply");
 						break;
 					}
 					else{
 						if(str[0]=='{'){
-							server.echo_back_msg(server.socketfd[index],str);
+							server.echo_back_msg(index,str);
 							break;
 						}
 						else{
-							server.echo_back_error(server.socketfd[index],"Reply has wrong format");
+							server.echo_back_error(index,"Reply has wrong format");
 							break;
 						}
 					}
 				}
 				if(i==-1){
-					server.echo_back_msg(server.socketfd[index],"1");
+					server.echo_back_msg(index,"1");
 				}
 			}
 		}

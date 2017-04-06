@@ -38,17 +38,17 @@ auto execute = [&](const short int index){
 		 **/
 		_ss->import_fixed(&args);
 		if(_ss->json_to(param,server.raw_msg[index])==false){
-			server.echo_back_error(server.socketfd[index],"Fail on parsing args");
+			server.echo_back_error(index,"Fail on parsing args");
 			continue;
 		}
 		_ss->import_fixed(nullptr);
 		if(_is->array_to(already,param["already"])==false){
-			server.echo_back_error(server.socketfd[index],"Fail on parsing already");
+			server.echo_back_error(index,"Fail on parsing already");
 			continue;
 		}
 		send.clear();
 		if(da.db_open(database_location)==false){
-			server.echo_back_error(server.socketfd[index],"Fail on opening info database");
+			server.echo_back_error(index,"Fail on opening info database");
 			continue;
 		}
 		/**
@@ -65,7 +65,7 @@ auto execute = [&](const short int index){
 				}
 			}
 			if(i==max){
-				server.echo_back_error(server.socketfd[index],"'up_tag' doesn't exist");
+				server.echo_back_error(index,"'up_tag' doesn't exist");
 				continue;
 			}
 		}
@@ -103,7 +103,7 @@ auto execute = [&](const short int index){
 				}
 			}
 			if(i<max){
-				server.echo_back_error(server.socketfd[index],"Fail on getting data from SQLite");
+				server.echo_back_error(index,"Fail on getting data from SQLite");
 				continue;
 			}
 			_ii.to_array(amount);
@@ -143,14 +143,14 @@ auto execute = [&](const short int index){
 			}
 		}
 		if(i>0){
-			server.echo_back_error(server.socketfd[index],"Fail on getting data from other server");
+			server.echo_back_error(index,"Fail on getting data from other server");
 			continue;
 		}
 		/**
 		 * 
 		 **/
 		_ss->to_json(send);
-		server.echo_back_msg(server.socketfd[index],_ss->outcome);
+		server.echo_back_msg(index,_ss->outcome);
 	}
 	server.done(index);
 	return;
