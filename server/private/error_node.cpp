@@ -39,7 +39,7 @@ auto execute = [&](const short int index){
 					sqlite3_bind_text(stmt,1,server.raw_msg[index].c_str(),server.raw_msg[index].length(),nullptr);
 					flag = sqlite3_step(stmt);
 					if(flag==SQLITE_DONE){
-						server.echo_back_error(server.socketfd[index],"Fail on parsing args");
+						server.echo_back_error(index,"Fail on parsing args");
 						continue;
 					}
 					std::cout << "Fail on inserting error_recv" << std::endl;
@@ -49,7 +49,7 @@ auto execute = [&](const short int index){
 			std::cout << "Fail on opening error_log database, so here are the messages" << std::endl;
 			std::cout << "Fail on parsing args" << std::endl;
 			std::cout << server.raw_msg[index] << std::endl;
-			server.echo_back_error(server.socketfd[index],"Fail on parsing args and open database");
+			server.echo_back_error(index,"Fail on parsing args and open database");
 			continue;
 		}
 		/**
@@ -98,7 +98,7 @@ auto execute = [&](const short int index){
 			str = "insert into socket (from_node,to_server,to_node,message,error_flag,time) values (?,?,?,?,?,datetime('now'))";
 		}
 		else{
-			server.echo_back_error(server.socketfd[index],"type invalid");
+			server.echo_back_error(index,"type invalid");
 			continue;
 		}
 		if(da.db_open(da.root+"/sqlite/error_log.db")==true){
@@ -112,15 +112,15 @@ auto execute = [&](const short int index){
 				sqlite3_bind_text(stmt,5,ss["message2"].c_str(),ss["message2"].length(),nullptr);
 				flag = sqlite3_step(stmt);
 				if(flag==SQLITE_DONE){
-					server.echo_back_msg(server.socketfd[index],"1");
+					server.echo_back_msg(index,"1");
 					continue;
 				}
-				server.echo_back_error(server.socketfd[index],"Fail on inserting error_log");
+				server.echo_back_error(index,"Fail on inserting error_log");
 			}
-			server.echo_back_error(server.socketfd[index],"Fail on preparing error_log");
+			server.echo_back_error(index,"Fail on preparing error_log");
 		}
 		else{
-			server.echo_back_error(server.socketfd[index],"Fail on open error_log database");
+			server.echo_back_error(index,"Fail on open error_log database");
 		}
 	}
 	if(stmt!=nullptr){
