@@ -1,6 +1,6 @@
-#ifndef si_tool_h
-#define si_tool_h
-#include <dalahast/tool/da_type.h>
+#ifndef si_tool_hpp
+#define si_tool_hpp
+#include <dalahast/tool/da_type.hpp>
 
 template <class T>
 class si_tool{
@@ -22,4 +22,4 @@ public:
 };
 
 #include <dalahast/tool/si_tool.cpp>
-#endif
+#endif /* si_tool_hpp */

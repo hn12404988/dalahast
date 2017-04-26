@@ -1,8 +1,8 @@
-#ifndef iss_tool_h
-#define iss_tool_h
-#include <dalahast/tool/da_type.h>
-#include <dalahast/tool/is_tool.h>
-#include <dalahast/tool/ss_tool.h>
+#ifndef iss_tool_hpp
+#define iss_tool_hpp
+#include <dalahast/tool/da_type.hpp>
+#include <dalahast/tool/is_tool.hpp>
+#include <dalahast/tool/ss_tool.hpp>
 class iss_tool : public is_tool , public ss_tool{
 protected:
 	da::IS is_use;
@@ -24,4 +24,4 @@ public:
 	std::size_t fixed_array_to(da::ISS &iss, std::string &array);
 };
 #include <dalahast/tool/iss_tool.cpp>
-#endif
+#endif /* iss_tool_hpp */

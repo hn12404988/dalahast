@@ -1,7 +1,7 @@
-#include <hast/unix_server.h>
-#include <hast/client_thread.h>
-#include <dalahast/dalahast.h>
-#include <dalahast/tool/iss_tool.h>
+#include <hast/unix_server.hpp>
+#include <hast/client_thread.hpp>
+#include <dalahast/dalahast.hpp>
+#include <dalahast/tool/iss_tool.hpp>
 
 unix_server server;
 da::IS args {"topology_init"};

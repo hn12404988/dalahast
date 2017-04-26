@@ -1,7 +1,7 @@
-#ifndef iis_tool_h
-#define iis_tool_h
-#include <dalahast/tool/da_type.h>
-#include <dalahast/tool/is_tool.h>
+#ifndef iis_tool_hpp
+#define iis_tool_hpp
+#include <dalahast/tool/da_type.hpp>
+#include <dalahast/tool/is_tool.hpp>
 
 class iis_tool : public is_tool{
 protected:
@@ -20,4 +20,4 @@ public:
 	std::size_t fixed_array_to(da::IIS &iis, std::string &array);
 };
 #include <dalahast/tool/iis_tool.cpp>
-#endif
+#endif /* iis_tool_hpp */

@@ -1,6 +1,6 @@
-#include <hast/tcp_server.h>
-#include <hast/client_core.h>
-#include <dalahast/dalahast.h>
+#include <hast/tcp_server.hpp>
+#include <hast/client_core.hpp>
+#include <dalahast/dalahast.hpp>
 
 tcp_server server;
 std::string port;

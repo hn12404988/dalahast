@@ -1,8 +1,8 @@
-#include <hast/unix_server.h>
-#include <hast/client_core.h>
-#include <dalahast/dalahast.h>
-#include <dalahast/tool/iss_tool.h>
-#include <dalahast/tool/ii_tool.h>
+#include <hast/unix_server.hpp>
+#include <hast/client_core.hpp>
+#include <dalahast/dalahast.hpp>
+#include <dalahast/tool/iss_tool.hpp>
+#include <dalahast/tool/ii_tool.hpp>
 
 unix_server server;
 da::IS args {"up_tag","already"}; //already is a string in array form. Start from '[]'

@@ -1,6 +1,6 @@
-#ifndef ss_tool_h
-#define ss_tool_h
-#include <dalahast/tool/da_type.h>
+#ifndef ss_tool_hpp
+#define ss_tool_hpp
+#include <dalahast/tool/da_type.hpp>
 class ss_tool{
 protected:
 	da::SS::iterator it;
@@ -23,4 +23,4 @@ public:
 	bool get_to(da::SS &ss,std::string &json);
 };
 #include <dalahast/tool/ss_tool.cpp>
-#endif
+#endif /* ss_tool_hpp */

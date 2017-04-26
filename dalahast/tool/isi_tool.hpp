@@ -1,8 +1,8 @@
-#ifndef isi_tool_h
-#define isi_tool_h
-#include <dalahast/tool/da_type.h>
-#include <dalahast/tool/is_tool.h>
-#include <dalahast/tool/si_tool.h>
+#ifndef isi_tool_hpp
+#define isi_tool_hpp
+#include <dalahast/tool/da_type.hpp>
+#include <dalahast/tool/is_tool.hpp>
+#include <dalahast/tool/si_tool.hpp>
 template<class T>
 class isi_tool : public is_tool , public si_tool<T>{
 protected:
@@ -25,4 +25,4 @@ public:
 	std::size_t fixed_array_to(std::vector<T*> &isi, std::string &array);
 };
 #include <dalahast/tool/isi_tool.cpp>
-#endif
+#endif /* isi_tool_hpp */

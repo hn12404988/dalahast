@@ -1,6 +1,6 @@
-#include <hast/unix_server.h>
-#include <dalahast/dalahast.h>
-#include <dalahast/tool/ss_tool.h>
+#include <hast/unix_server.hpp>
+#include <dalahast/dalahast.hpp>
+#include <dalahast/tool/ss_tool.hpp>
 
 /**
  * args [Raw Input]: A string in json form. 

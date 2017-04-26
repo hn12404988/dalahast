@@ -1,6 +1,6 @@
-#ifndef ii_tool_h
-#define ii_tool_h
-#include <dalahast/tool/da_type.h>
+#ifndef ii_tool_hpp
+#define ii_tool_hpp
+#include <dalahast/tool/da_type.hpp>
 
 template< class T>
 class ii_tool{
@@ -21,4 +21,4 @@ public:
 
 };
 #include <dalahast/tool/ii_tool.cpp>
-#endif
+#endif /* ii_tool_hpp */

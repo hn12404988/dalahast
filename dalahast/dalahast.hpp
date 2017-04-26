@@ -1,10 +1,10 @@
-#ifndef dalahast_h
-#define dalahast_h
+#ifndef dalahast_hpp
+#define dalahast_hpp
 #include <iostream>
 #include <sqlite3.h>
 #include <stdio.h>
 #include <string>
-#include <dalahast/tool/iss_tool.h>
+#include <dalahast/tool/iss_tool.hpp>
 
 namespace da{
 	const std::string server_prefix {"/server/"};
@@ -70,4 +70,4 @@ public:
 	bool all_main_port();
 };
 #include <dalahast/dalahast.cpp>
-#endif dalahast_h
+#endif /* dalahast_hpp */

@@ -1,6 +1,6 @@
-#ifndef is_tool_h
-#define is_tool_h
-#include <dalahast/tool/da_type.h>
+#ifndef is_tool_hpp
+#define is_tool_hpp
+#include <dalahast/tool/da_type.hpp>
 
 class is_tool{
 protected:
@@ -33,4 +33,4 @@ public:
 
 };
 #include <dalahast/tool/is_tool.cpp>
-#endif
+#endif /* is_tool_hpp */

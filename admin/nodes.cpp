@@ -29,7 +29,7 @@ void kill_pid(std::string name){
 	while(fgets(buff, buff_size, in)!=nullptr){
 		send = buff;
 		i = 0;
-		if(send.find(" sudo ")==std::string::npos && send.find(" grep ")==std::string::npos){
+		if(send.find(" grep ")==std::string::npos){
 			send2.clear();
 			while(send[0]==' '){
 				send = send.substr(1);
@@ -96,7 +96,7 @@ void check_pid(std::string name){
 	while(fgets(buff, buff_size, in)!=nullptr){
 		send = buff;
 		i = 0;
-		if(send.find(" sudo ")==std::string::npos && send.find(" grep ")==std::string::npos){
+		if(send.find(" grep ")==std::string::npos){
 			send2.clear();
 			while(send[0]==' '){
 				send = send.substr(1);

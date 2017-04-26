@@ -1,8 +1,8 @@
-#include <hast/unix_server.h>
-#include <hast/client_core.h>
-#include <dalahast/dalahast.h>
-#include <dalahast/tool/ss_tool.h>
-#include <dalahast/tool/ii_tool.h>
+#include <hast/unix_server.hpp>
+#include <hast/client_core.hpp>
+#include <dalahast/dalahast.hpp>
+#include <dalahast/tool/ss_tool.hpp>
+#include <dalahast/tool/ii_tool.hpp>
 
 
 unix_server server;

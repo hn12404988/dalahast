@@ -1,5 +1,5 @@
-#ifndef da_type_h
-#define da_type_h
+#ifndef da_type_hpp
+#define da_type_hpp
 #include <map>
 #include <string>
 #include <vector>
@@ -150,4 +150,4 @@ void da_type::concat_3d(T &main,T &sub){
 	}
 	sub.clear();
 }
-#endif
+#endif /* da_type_hpp */

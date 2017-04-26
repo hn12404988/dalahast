@@ -1,6 +1,6 @@
-#include <hast_web/wss_server.h>
-#include <hast/client_core.h>
-#include <dalahast/dalahast.h>
+#include <hast_web/wss_server.hpp>
+#include <hast/client_core.hpp>
+#include <dalahast/dalahast.hpp>
 
 wss_server server;
 std::string port;
