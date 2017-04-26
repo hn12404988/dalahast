@@ -1,4 +1,4 @@
-#include <dalahast/dalahast.h>
+#include <dalahast/dalahast.hpp>
 
 void get(std::string &str){
 	str.clear();

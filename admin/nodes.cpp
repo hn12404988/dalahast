@@ -1,4 +1,4 @@
-#include <dalahast/dalahast.h>
+#include <dalahast/dalahast.hpp>
 #include <string.h>
 
 const short int buff_size {300};
