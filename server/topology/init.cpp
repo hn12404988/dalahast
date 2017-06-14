@@ -38,10 +38,7 @@ auto execute = [&](const short int index){
 		/**
 		 * 
 		 **/
-		if(client.join(to_info)==false){
-			server.echo_back_error(index,"Fail on joining info");
-			continue;
-		}
+		client.join(to_info);
 		if(info[0]=='0' || info==""){
 			server.echo_back_error(index,"info return error");
 			continue;
@@ -85,10 +82,7 @@ auto execute = [&](const short int index){
 		/**
 		 * 
 		 **/
-		if(client.join(to_topology)==false){
-			server.echo_back_error(index,"Fail on joining topology");
-			continue;
-		}
+		client.join(to_topology);
 		if(topology[0]=='0' || topology==""){
 			server.echo_back_error(index,"topology return error");
 			continue;

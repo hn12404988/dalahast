@@ -427,7 +427,6 @@ function reset_graph(){
 	for(i=0;i<j;i++){
 		edges[i]["color"] = edge_color(edges[i]["fire_type"]);
 	}
-	//show_data_racing(document.getElementById("filter_data_racing"));
 	s.refresh();
 	fill_node_info(true);
 }
